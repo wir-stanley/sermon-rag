@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Search, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 
 export default function HomePage() {
@@ -23,80 +23,80 @@ export default function HomePage() {
       handleSearch();
     }
   };
+
   return (
-    <main className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-black text-white selection:bg-white/20">
+    <main className="relative flex min-h-dvh flex-col items-center justify-center bg-[#E5DCD5] text-[#2C2A29] selection:bg-[#2C2A29] selection:text-[#E5DCD5] overflow-hidden">
 
-      {/* Full Screen Premium Image Background */}
-      <div className="absolute inset-0 z-0 select-none pointer-events-none">
-        <Image
-          src="/images/1_upscayl_2x.jpg"
-          alt="Premium Cinematic Background"
-          fill
-          className="object-cover opacity-60"
-          priority
-        />
-        {/* Subtle Vignette / Gradient Overlay for text contrast */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/80" />
-      </div>
-
-      <header className="absolute top-0 left-0 w-full p-6 md:p-10 z-20 flex justify-between items-center animate-fade-in-down duration-1000">
-        <Image
-          src="/images/logo.png"
-          alt="GRII Logo"
-          width={300}
-          height={100}
-          className="h-12 md:h-16 w-auto object-contain opacity-90 hover:opacity-100 transition-opacity"
-          priority
-        />
+      {/* Header */}
+      <header className="absolute top-0 w-full p-8 z-20 flex justify-end items-center animate-fade-in-down duration-1000">
         <div className="flex items-center gap-4">
           <SignedOut>
             <SignInButton mode="modal" fallbackRedirectUrl="/chat" forceRedirectUrl="/chat">
-              <button className="text-sm uppercase tracking-widest text-white/70 hover:text-white transition-colors font-semibold">
-                Masuk / Daftar
+              <button className="text-[11px] font-medium uppercase tracking-[0.15em] text-[#2C2A29]/60 hover:text-[#2C2A29] transition-colors">
+                Masuk
               </button>
             </SignInButton>
           </SignedOut>
           <SignedIn>
-            <UserButton appearance={{ elements: { userButtonAvatarBox: "h-10 w-10" } }} />
+            <UserButton appearance={{ elements: { userButtonAvatarBox: "h-8 w-8" } }} />
           </SignedIn>
         </div>
       </header>
 
-      <div className="z-10 flex w-full max-w-5xl flex-col items-center px-4 text-center mt-12 animate-in fade-in slide-in-from-bottom-8 duration-1000">
-        <h1 className="font-sans font-bold text-[5rem] md:text-[9.5rem] leading-[0.9] tracking-tight mix-blend-overlay text-white mb-6">
-          REFORMED.AI
+      {/* Main Content */}
+      <div className="z-10 flex w-full max-w-3xl flex-col items-center px-6 text-center animate-in fade-in slide-in-from-bottom-8 duration-1000 mt-[-5vh]">
+
+        {/* Logo */}
+        <div className="relative h-24 w-72 mb-10 brightness-0 opacity-85 hover:opacity-100 transition-opacity duration-500">
+          <Image
+            src="/images/logo.png"
+            alt="GRII Logo"
+            fill
+            className="object-contain"
+            priority
+          />
+        </div>
+
+        {/* Studio Name equivalent */}
+        <h1 className="font-sans font-bold text-sm tracking-tight uppercase text-[#2C2A29] mb-4">
+          REFORMED.AI®
         </h1>
 
-        <p className="font-sans font-medium text-lg md:text-2xl tracking-tight text-white/70 mb-16">
-          Temukan jawaban dari khotbah GRII.
+        {/* Paragraph equivalent */}
+        <p className="font-sans font-semibold text-[14px] leading-[1.4] tracking-tight text-[#2C2A29]/80 mb-14 max-w-[420px]">
+          Sebuah arsitektur kecerdasan buatan komprehensif yang dirancang
+          secara khusus untuk menemukan jawaban mendalam dari
+          ribuan khotbah Gereja Reformed Injili Indonesia.
         </p>
 
-        {/* Premium Glass Search Interface */}
-        <div className="premium-glass group focus-within:ring-1 focus-within:ring-white/30 focus-within:bg-black/60 w-full max-w-2xl rounded-2xl p-2 flex flex-col sm:flex-row items-center gap-2 transition-all duration-700 hover:bg-black/50 shadow-2xl">
-          <div className="relative w-full flex items-center">
-            <Search className="absolute left-6 h-5 w-5 text-white/50 transition-colors group-focus-within:text-white" />
+        {/* Chatbox */}
+        <div className="w-full max-w-lg group">
+          <div className="relative flex items-center bg-transparent border border-[#2C2A29]/20 rounded-full group-focus-within:border-[#2C2A29]/60 group-focus-within:bg-white/30 transition-all duration-500 py-3 px-6 shadow-sm hover:border-[#2C2A29]/40 hover:shadow-md">
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ajukan pertanyaan mendalam..."
-              className="w-full bg-transparent py-5 pl-16 pr-6 text-lg text-white placeholder:text-white/40 placeholder:font-sans font-sans outline-none"
+              placeholder="Tuliskan pertanyaan Anda di sini..."
+              className="w-full bg-transparent text-[15px] font-medium tracking-wide text-[#2C2A29] placeholder:text-[#2C2A29]/40 outline-none pr-4"
             />
+            <button
+              onClick={handleSearch}
+              className="p-2 -mr-3 text-[#E5DCD5] bg-[#2C2A29] rounded-full hover:scale-105 active:scale-95 transition-all duration-300 outline-none shadow-sm flex items-center justify-center"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
           </div>
-
-          <button onClick={handleSearch} className="shrink-0 w-full sm:w-auto outline-none">
-            <div className="group/btn relative overflow-hidden flex px-10 py-5 items-center justify-center gap-3 rounded-xl bg-white text-black font-semibold tracking-wide transition-all duration-500 hover:bg-white hover:scale-[1.02] shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.3)]">
-              <span className="uppercase tracking-widest text-sm relative z-10 transition-transform duration-500 group-hover/btn:-translate-x-1">Masuk</span>
-              <ChevronRight className="h-4 w-4 relative z-10 transition-transform duration-500 group-hover/btn:translate-x-1" />
-            </div>
-          </button>
         </div>
+
       </div>
 
-      <footer className="absolute bottom-8 z-10 w-full text-center text-xs tracking-[0.2em] uppercase text-white/30">
-        Arsitektur Kecerdasan Khotbah GRII
-      </footer>
+      {/* Footer cursor / arrow optional */}
+      <div className="absolute bottom-12 animate-pulse text-[#2C2A29]/40 opacity-50">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 20L12 4M12 20L18 14M12 20L6 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </div>
     </main>
   );
 }
