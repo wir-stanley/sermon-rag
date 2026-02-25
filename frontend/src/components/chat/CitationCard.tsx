@@ -18,21 +18,21 @@ export default function CitationCard({ citation, index }: CitationCardProps) {
       : "Afternoon Service";
 
   return (
-    <div className="group rounded-lg border border-border bg-card p-3 transition-colors hover:border-gold-800/50">
+    <div className="group rounded-lg border border-[#2C2A29]/10 bg-[#E5DCD5]/50 p-3 transition-colors hover:border-[#2C2A29]/30 shadow-sm backdrop-blur-sm">
       <div className="flex items-start gap-2">
         {/* Index badge */}
-        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-gold-900/40 text-xs font-medium text-gold-400">
+        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-[#2C2A29]/10 text-[10px] font-bold text-[#2C2A29]">
           {index + 1}
         </span>
 
-        <div className="min-w-0 flex-1 space-y-1.5">
+        <div className="min-w-0 flex-1 space-y-1.5 pt-0.5">
           {/* Title */}
-          <p className="text-sm font-medium text-foreground leading-snug truncate">
+          <p className="text-[13px] font-semibold text-[#2C2A29] leading-snug truncate">
             {citation.title}
           </p>
 
           {/* Metadata row */}
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-medium text-[#2C2A29]/60">
             <span className="flex items-center gap-1">
               <Icon className="h-3 w-3" />
               {typeLabel}
@@ -50,7 +50,7 @@ export default function CitationCard({ citation, index }: CitationCardProps) {
               </span>
             )}
             {citation.sermon_number && (
-              <span className="text-gold-600">{citation.sermon_number}</span>
+              <span className="text-[#2C2A29] font-semibold">{citation.sermon_number}</span>
             )}
             {citation.page_or_timestamp && (
               <span>{citation.page_or_timestamp}</span>
@@ -58,8 +58,8 @@ export default function CitationCard({ citation, index }: CitationCardProps) {
           </div>
 
           {/* Excerpt */}
-          <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-            {citation.excerpt}
+          <p className="text-[12px] font-medium text-[#2C2A29]/70 line-clamp-2 leading-relaxed mt-2 italic">
+            "{citation.excerpt}"
           </p>
         </div>
       </div>

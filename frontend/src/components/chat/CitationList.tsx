@@ -12,7 +12,7 @@ export default function CitationList({ citations }: CitationListProps) {
 
   return (
     <div className="space-y-2">
-      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+      <p className="text-xs font-semibold text-[#2C2A29]/50 uppercase tracking-wider">
         Sources
       </p>
       <div className="grid gap-2 sm:grid-cols-2">

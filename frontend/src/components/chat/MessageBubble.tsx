@@ -21,7 +21,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
       )}
     >
       {!isUser && (
-        <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-black/40 border border-white/10 text-white backdrop-blur-md shadow-xl">
+        <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/60 border border-[#2C2A29]/10 text-[#2C2A29] backdrop-blur-md shadow-sm">
           <BookOpen className="h-4 w-4" />
         </div>
       )}
@@ -35,10 +35,10 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
         {/* Message content */}
         <div
           className={cn(
-            "rounded-3xl px-7 py-5 shadow-xl backdrop-blur-md transition-all duration-300",
+            "rounded-3xl px-7 py-5 shadow-sm backdrop-blur-md transition-all duration-300",
             isUser
-              ? "bg-white/90 text-black font-medium tracking-wide"
-              : "bg-black/60 text-white/90 border border-white/10"
+              ? "bg-[#2C2A29] text-[#E5DCD5] font-medium tracking-wide"
+              : "bg-white/40 text-[#2C2A29] border border-[#2C2A29]/10"
           )}
         >
           {isUser ? (
@@ -46,8 +46,8 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
           ) : (
             <div
               className={cn(
-                "prose-chat text-[15px] leading-relaxed tracking-wide font-sans",
-                message.isStreaming && !message.content && "text-white/40"
+                "prose-chat text-[15px] leading-relaxed tracking-wide font-sans text-inherit",
+                message.isStreaming && !message.content && "text-[#2C2A29]/40"
               )}
             >
               {message.content ? (
@@ -59,9 +59,9 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
                 />
               ) : (
                 <span className="flex items-center gap-1 h-6 px-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-white/50 animate-bounce" style={{ animationDelay: "0ms" }} />
-                  <span className="h-1.5 w-1.5 rounded-full bg-white/50 animate-bounce" style={{ animationDelay: "150ms" }} />
-                  <span className="h-1.5 w-1.5 rounded-full bg-white/50 animate-bounce" style={{ animationDelay: "300ms" }} />
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#2C2A29]/50 animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#2C2A29]/50 animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#2C2A29]/50 animate-bounce" style={{ animationDelay: "300ms" }} />
                 </span>
               )}
             </div>
@@ -83,7 +83,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
       </div>
 
       {isUser && (
-        <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-black shadow-xl">
+        <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#2C2A29] text-[#E5DCD5] shadow-sm">
           <User className="h-4 w-4" />
         </div>
       )}

@@ -31,9 +31,10 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
-      <html lang="en" className="dark">
+      <html lang="en" suppressHydrationWarning>
         <body
           className={`${inter.variable} ${playfair.variable} ${cinzel.variable} font-sans antialiased`}
+          suppressHydrationWarning
         >
           {children}
         </body>

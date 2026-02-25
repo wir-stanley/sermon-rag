@@ -33,22 +33,10 @@ export default function ChatLayout({
   );
 
   return (
-    <div className="relative flex h-dvh overflow-hidden bg-black text-white">
-      {/* Premium Cinematic Background */}
-      <div className="absolute inset-0 z-0 select-none pointer-events-none">
-        <Image
-          src="/images/Gemini_Generated_Image_n81phsn81phsn81p.png" // Use a different cinematic image for chat
-          alt="Premium Chat Background"
-          fill
-          className="object-cover opacity-30"
-          priority
-        />
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-      </div>
-
+    <div className="relative flex h-dvh overflow-hidden bg-[#E5DCD5] text-[#2C2A29] selection:bg-[#2C2A29] selection:text-[#E5DCD5]">
       <div className="relative z-10 flex h-full w-full">
         {/* Desktop sidebar */}
-        <div className="hidden md:block premium-glass border-r border-white/10">{sidebar}</div>
+        <div className="hidden md:block bg-transparent border-r border-[#2C2A29]/10">{sidebar}</div>
 
         {/* Mobile sidebar */}
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -56,12 +44,12 @@ export default function ChatLayout({
             <Button
               variant="ghost"
               size="icon"
-              className="absolute left-3 top-3 z-20 md:hidden text-white/70 hover:text-white"
+              className="absolute left-3 top-3 z-20 md:hidden text-[#2C2A29]/70 hover:text-[#2C2A29]"
             >
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-64 p-0 premium-glass border-white/10 text-white">
+          <SheetContent side="left" className="w-64 p-0 bg-[#E5DCD5] border-[#2C2A29]/10 text-[#2C2A29]">
             {sidebar}
           </SheetContent>
         </Sheet>

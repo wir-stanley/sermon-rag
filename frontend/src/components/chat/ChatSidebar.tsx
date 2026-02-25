@@ -50,37 +50,35 @@ export default function ChatSidebar({
   return (
     <div className="flex h-full w-full flex-col bg-transparent">
       {/* Brand */}
-      <div className="flex items-center justify-center px-6 py-8">
+      <div className="flex items-center justify-center px-6 py-10">
         <Link href="/">
           <Image
             src="/images/logo.png"
             alt="GRII Logo"
             width={300}
             height={100}
-            className="h-16 w-auto object-contain opacity-90 hover:opacity-100 transition-opacity cursor-pointer"
+            className="h-16 w-auto object-contain brightness-0 opacity-85 hover:opacity-100 transition-opacity cursor-pointer"
             priority
           />
         </Link>
       </div>
 
-      <div className="px-4">
+      <div className="px-6 mb-4">
         <Button
           onClick={onNewChat}
           variant="outline"
-          className="w-full justify-start gap-2 border border-white/20 text-white font-medium tracking-wide hover:text-black hover:bg-white hover:border-white transition-all duration-300 shadow-[0_0_15px_rgba(255,255,255,0.05)] hover:shadow-[0_0_20px_rgba(255,255,255,0.2)]"
+          className="w-full justify-start gap-2 bg-transparent border border-[#2C2A29]/20 text-[#2C2A29] font-semibold tracking-wide hover:text-[#E5DCD5] hover:bg-[#2C2A29] hover:border-[#2C2A29] transition-all duration-300 shadow-sm rounded-full"
         >
           <Plus className="h-4 w-4" />
           Percakapan Baru
         </Button>
       </div>
 
-      <Separator className="my-3 border-white/10" />
-
       {/* Conversation list */}
-      <ScrollArea className="flex-1 px-3">
+      <ScrollArea className="flex-1 px-4 mt-2">
         <div className="space-y-1 pb-4">
           {conversations.length === 0 ? (
-            <p className="px-2 py-4 text-center text-xs text-white/40 font-medium tracking-widest uppercase">
+            <p className="px-2 py-6 text-center text-[10px] text-[#2C2A29]/40 font-semibold tracking-widest uppercase mt-4">
               Belum ada percakapan
             </p>
           ) : (
@@ -90,13 +88,13 @@ export default function ChatSidebar({
                 <div
                   key={conv.id}
                   className={cn(
-                    "group flex items-center gap-2 rounded-xl px-3 py-3 text-sm transition-all duration-300 font-medium",
+                    "group flex items-center gap-2 rounded-xl px-4 py-3 text-sm transition-all duration-300 font-medium",
                     isActive
-                      ? "bg-white text-black shadow-lg shadow-white/10"
-                      : "text-white/60 hover:bg-white/10 hover:text-white"
+                      ? "bg-[#2C2A29]/5 text-[#2C2A29] shadow-sm border border-[#2C2A29]/10"
+                      : "text-[#2C2A29]/60 hover:bg-[#2C2A29]/5 hover:text-[#2C2A29]"
                   )}
                 >
-                  <MessageSquare className={cn("h-4 w-4 shrink-0", isActive ? "text-black" : "text-white/40 group-hover:text-white/80")} />
+                  <MessageSquare className={cn("h-4 w-4 shrink-0 transition-colors", isActive ? "text-[#2C2A29]" : "text-[#2C2A29]/40 group-hover:text-[#2C2A29]")} />
                   {editingId === conv.id ? (
                     <input
                       value={editTitle}
@@ -106,13 +104,13 @@ export default function ChatSidebar({
                         if (e.key === "Enter") submitEdit(conv.id);
                         if (e.key === "Escape") setEditingId(null);
                       }}
-                      className="flex-1 bg-transparent outline-none text-foreground"
+                      className="flex-1 bg-transparent border-b border-[#2C2A29]/30 outline-none text-[#2C2A29] px-1"
                       autoFocus
                     />
                   ) : (
                     <Link
                       href={`/chat/${conv.id}`}
-                      className="flex-1 truncate"
+                      className="flex-1 truncate tracking-tight"
                     >
                       {conv.title}
                     </Link>
@@ -123,7 +121,7 @@ export default function ChatSidebar({
                         e.preventDefault();
                         startEdit(conv);
                       }}
-                      className="p-1 hover:text-gold-400"
+                      className="p-1.5 text-[#2C2A29]/40 hover:text-[#2C2A29] transition-colors"
                     >
                       <Pencil className="h-3 w-3" />
                     </button>
@@ -132,7 +130,7 @@ export default function ChatSidebar({
                         e.preventDefault();
                         onDelete(conv.id);
                       }}
-                      className="p-1 hover:text-red-400"
+                      className="p-1.5 text-[#2C2A29]/40 hover:text-red-500/80 transition-colors"
                     >
                       <Trash2 className="h-3 w-3" />
                     </button>
@@ -145,17 +143,17 @@ export default function ChatSidebar({
       </ScrollArea>
 
       {/* Footer */}
-      <div className="border-t border-white/10 px-4 py-4 flex items-center justify-between">
+      <div className="border-t border-[#2C2A29]/10 px-6 py-6 flex items-center justify-between">
         <Link
           href="/"
-          className="text-xs uppercase tracking-widest text-white/50 hover:text-white transition-colors font-semibold"
+          className="text-[10px] uppercase tracking-widest text-[#2C2A29]/40 hover:text-[#2C2A29] transition-colors font-semibold"
         >
           Beranda
         </Link>
         <div className="flex items-center">
           <SignedOut>
             <SignInButton mode="modal">
-              <button className="text-xs uppercase tracking-widest text-white/50 hover:text-white transition-colors font-semibold">
+              <button className="text-[10px] uppercase tracking-widest text-[#2C2A29]/40 hover:text-[#2C2A29] transition-colors font-semibold">
                 Masuk
               </button>
             </SignInButton>

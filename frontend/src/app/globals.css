@@ -105,29 +105,29 @@
 }
 
 .prose-chat strong {
-  @apply font-bold text-white;
+  @apply font-bold text-[#2C2A29];
 }
 
 .prose-chat code {
-  @apply rounded bg-white/10 px-1.5 py-0.5 text-sm font-mono text-white/90;
+  @apply rounded bg-[#2C2A29]/10 px-1.5 py-0.5 text-sm font-mono text-[#2C2A29]/90;
 }
 
 .prose-chat pre {
-  @apply mb-3 rounded-lg bg-black/40 border border-white/10 p-4 overflow-x-auto;
+  @apply mb-3 rounded-lg bg-white/40 border border-[#2C2A29]/10 p-4 overflow-x-auto;
 }
 
 .prose-chat pre code {
-  @apply bg-transparent p-0 text-white/80;
+  @apply bg-transparent p-0 text-[#2C2A29]/80;
 }
 
 .prose-chat blockquote {
-  @apply mb-3 border-l-2 border-white/30 pl-4 italic text-white/60;
+  @apply mb-3 border-l-2 border-[#2C2A29]/30 pl-4 italic text-[#2C2A29]/60;
 }
 
 .prose-chat h1,
 .prose-chat h2,
 .prose-chat h3 {
-  @apply font-sans font-bold text-white mb-2 mt-4 first:mt-0 tracking-wide;
+  @apply font-sans font-bold text-[#2C2A29] mb-2 mt-4 first:mt-0 tracking-wide;
 }
 
 .prose-chat h1 {
@@ -143,7 +143,7 @@
 }
 
 .prose-chat a {
-  @apply text-white/80 underline underline-offset-4 hover:text-white transition-colors;
+  @apply text-[#2C2A29]/80 underline underline-offset-4 hover:text-[#2C2A29] transition-colors;
 }
 
 /* Glassmorphism utility */
@@ -154,7 +154,7 @@
 /* Streaming cursor */
 .streaming-cursor::after {
   content: "▊";
-  @apply animate-pulse-cursor text-white/60 ml-0.5;
+  @apply animate-pulse-cursor text-[#2C2A29]/60 ml-0.5;
 }
 
 /* Premium Glassmorphism */

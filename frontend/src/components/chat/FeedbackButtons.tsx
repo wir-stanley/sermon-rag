@@ -51,10 +51,10 @@ export default function FeedbackButtons({
         onClick={() => handleFeedback(true)}
         disabled={!messageId || isSubmitting}
         className={cn(
-          "rounded p-1.5 transition-colors",
+          "rounded-md p-1.5 transition-all duration-300",
           feedback === true
-            ? "text-gold-400 bg-gold-900/20"
-            : "text-muted-foreground hover:text-foreground hover:bg-muted",
+            ? "text-[#2C2A29] bg-[#2C2A29]/10 shadow-sm border border-[#2C2A29]/10"
+            : "text-[#2C2A29]/40 hover:text-[#2C2A29] hover:bg-[#2C2A29]/5 border border-transparent",
           (!messageId || isSubmitting) && "opacity-40 cursor-not-allowed"
         )}
         title="Helpful"
@@ -65,10 +65,10 @@ export default function FeedbackButtons({
         onClick={() => handleFeedback(false)}
         disabled={!messageId || isSubmitting}
         className={cn(
-          "rounded p-1.5 transition-colors",
+          "rounded-md p-1.5 transition-all duration-300",
           feedback === false
-            ? "text-red-400 bg-red-900/20"
-            : "text-muted-foreground hover:text-foreground hover:bg-muted",
+            ? "text-red-600 bg-red-500/10 shadow-sm border border-red-500/10"
+            : "text-[#2C2A29]/40 hover:text-[#red-600] hover:bg-red-500/5 border border-transparent hover:text-red-500",
           (!messageId || isSubmitting) && "opacity-40 cursor-not-allowed"
         )}
         title="Not helpful"
