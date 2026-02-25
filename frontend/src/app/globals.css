@@ -1,0 +1,167 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 2%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 2%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 43 74% 49%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 43 74% 49%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* Prose styling for chat messages */
+.prose-chat {
+  @apply text-foreground leading-relaxed;
+}
+
+.prose-chat p {
+  @apply mb-3 last:mb-0;
+}
+
+.prose-chat ul,
+.prose-chat ol {
+  @apply mb-3 ml-6;
+}
+
+.prose-chat ul {
+  @apply list-disc;
+}
+
+.prose-chat ol {
+  @apply list-decimal;
+}
+
+.prose-chat li {
+  @apply mb-1;
+}
+
+.prose-chat strong {
+  @apply font-bold text-white;
+}
+
+.prose-chat code {
+  @apply rounded bg-white/10 px-1.5 py-0.5 text-sm font-mono text-white/90;
+}
+
+.prose-chat pre {
+  @apply mb-3 rounded-lg bg-black/40 border border-white/10 p-4 overflow-x-auto;
+}
+
+.prose-chat pre code {
+  @apply bg-transparent p-0 text-white/80;
+}
+
+.prose-chat blockquote {
+  @apply mb-3 border-l-2 border-white/30 pl-4 italic text-white/60;
+}
+
+.prose-chat h1,
+.prose-chat h2,
+.prose-chat h3 {
+  @apply font-sans font-bold text-white mb-2 mt-4 first:mt-0 tracking-wide;
+}
+
+.prose-chat h1 {
+  @apply text-xl;
+}
+
+.prose-chat h2 {
+  @apply text-lg;
+}
+
+.prose-chat h3 {
+  @apply text-base;
+}
+
+.prose-chat a {
+  @apply text-white/80 underline underline-offset-4 hover:text-white transition-colors;
+}
+
+/* Glassmorphism utility */
+.glass {
+  @apply bg-white/5 backdrop-blur-xl border border-white/10;
+}
+
+/* Streaming cursor */
+.streaming-cursor::after {
+  content: "▊";
+  @apply animate-pulse-cursor text-white/60 ml-0.5;
+}
+
+/* Premium Glassmorphism */
+.premium-glass {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+}

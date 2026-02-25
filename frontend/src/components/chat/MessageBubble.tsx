@@ -1,0 +1,125 @@
+"use client";
+
+import { User, BookOpen } from "lucide-react";
+import { cn } from "@/lib/utils";
+import CitationList from "./CitationList";
+import FeedbackButtons from "./FeedbackButtons";
+import type { Message } from "@/types";
+
+interface MessageBubbleProps {
+  message: Message;
+}
+
+export default function MessageBubble({ message }: MessageBubbleProps) {
+  const isUser = message.role === "user";
+
+  return (
+    <div
+      className={cn(
+        "flex gap-3 px-4 py-4 animate-in fade-in slide-in-from-bottom-4 duration-500",
+        isUser ? "justify-end" : "justify-start"
+      )}
+    >
+      {!isUser && (
+        <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-black/40 border border-white/10 text-white backdrop-blur-md shadow-xl">
+          <BookOpen className="h-4 w-4" />
+        </div>
+      )}
+
+      <div
+        className={cn(
+          "max-w-3xl space-y-3",
+          isUser ? "max-w-xl" : "flex-1"
+        )}
+      >
+        {/* Message content */}
+        <div
+          className={cn(
+            "rounded-3xl px-7 py-5 shadow-xl backdrop-blur-md transition-all duration-300",
+            isUser
+              ? "bg-white/90 text-black font-medium tracking-wide"
+              : "bg-black/60 text-white/90 border border-white/10"
+          )}
+        >
+          {isUser ? (
+            <p className="text-[15px] leading-relaxed">{message.content}</p>
+          ) : (
+            <div
+              className={cn(
+                "prose-chat text-[15px] leading-relaxed tracking-wide font-sans",
+                message.isStreaming && !message.content && "text-white/40"
+              )}
+            >
+              {message.content ? (
+                <div
+                  className={message.isStreaming ? "streaming-cursor" : ""}
+                  dangerouslySetInnerHTML={{
+                    __html: formatMarkdown(message.content),
+                  }}
+                />
+              ) : (
+                <span className="flex items-center gap-1 h-6 px-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-white/50 animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <span className="h-1.5 w-1.5 rounded-full bg-white/50 animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <span className="h-1.5 w-1.5 rounded-full bg-white/50 animate-bounce" style={{ animationDelay: "300ms" }} />
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Citations */}
+        {!isUser && message.citations && message.citations.length > 0 && (
+          <CitationList citations={message.citations} />
+        )}
+
+        {/* Feedback */}
+        {!isUser && !message.isStreaming && message.content && (
+          <FeedbackButtons
+            messageId={message.serverMessageId}
+            initialFeedback={message.feedback}
+          />
+        )}
+      </div>
+
+      {isUser && (
+        <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-black shadow-xl">
+          <User className="h-4 w-4" />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Simple markdown to HTML for assistant messages */
+function formatMarkdown(text: string): string {
+  return text
+    // Code blocks
+    .replace(/```(\w*)\n([\s\S]*?)```/g, "<pre><code>$2</code></pre>")
+    // Inline code
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    // Bold
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    // Italic
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+    // Headers
+    .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+    .replace(/^## (.+)$/gm, "<h2>$1</h2>")
+    .replace(/^# (.+)$/gm, "<h1>$1</h1>")
+    // Blockquotes
+    .replace(/^> (.+)$/gm, "<blockquote>$1</blockquote>")
+    // Unordered lists
+    .replace(/^[*-] (.+)$/gm, "<li>$1</li>")
+    // Ordered lists
+    .replace(/^\d+\. (.+)$/gm, "<li>$1</li>")
+    // Wrap consecutive <li> in <ul>
+    .replace(/((?:<li>.*<\/li>\n?)+)/g, "<ul>$1</ul>")
+    // Links
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+    // Paragraphs (double newlines)
+    .replace(/\n\n/g, "</p><p>")
+    // Single newlines to <br>
+    .replace(/\n/g, "<br>")
+    // Wrap in <p>
+    .replace(/^(.+)$/, "<p>$1</p>");
+}

@@ -1,0 +1,35 @@
+# GRII Sermon RAG — Backend Dependencies
+
+# --- Core ---
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic-settings==2.7.1
+
+# --- Database ---
+sqlalchemy[asyncio]==2.0.36
+asyncpg==0.30.0
+pgvector==0.3.6
+psycopg2-binary==2.9.10
+
+# --- AI / RAG ---
+openai==1.59.9
+anthropic>=0.82.0
+google-genai>=1.64.0
+llama-index-core==0.12.12
+llama-index-embeddings-openai==0.3.1
+
+# --- PDF Processing ---
+PyMuPDF==1.25.3
+
+# --- YouTube ---
+youtube-transcript-api==1.2.4
+yt-dlp==2025.1.15
+
+# --- Auth ---
+PyJWT[crypto]==2.10.1
+python-multipart==0.0.20
+email-validator==2.1.0
+
+# --- Utilities ---
+python-dotenv==1.0.1
+httpx==0.28.1

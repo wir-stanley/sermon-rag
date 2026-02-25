@@ -1,0 +1,8 @@
+﻿node_modules/
+.next/
+__pycache__/
+*.log
+.env*
+Khotbah/
+.claude/
+cookies.txt
