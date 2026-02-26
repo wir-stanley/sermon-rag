@@ -118,15 +118,16 @@ async def chat_stream(
         await db.commit()
 
     async def event_generator():
-        if conv:
-            yield f"data: {json.dumps({'type': 'conversation', 'conversation_id': conv.id})}\n\n"
+        try:
+            if conv:
+                yield f"data: {json.dumps({'type': 'conversation', 'conversation_id': conv.id})}\n\n"
 
-        full_answer = ""
-        citations_data = []
-        gen_time = None
-        chunk_count = None
+            full_answer = ""
+            citations_data = []
+            gen_time = None
+            chunk_count = None
 
-        async for event in query_sermons_stream(db, request.question, request.language, chat_history=history):
+            async for event in query_sermons_stream(db, request.question, request.language, chat_history=history):
             yield f"data: {json.dumps(event)}\n\n"
 
             if event["type"] == "token":
@@ -150,6 +151,10 @@ async def chat_stream(
             db.add(asst_msg)
             await db.commit()
             yield f"data: {json.dumps({'type': 'message_id', 'id': asst_msg.id})}\n\n"
+
+        except Exception as e:
+            yield f"data: {json.dumps({'type': 'token', 'content': f'\\n\\n[Backend Crash: {str(e)}]' })}\n\n"
+            yield f"data: {json.dumps({'type': 'done'})}\n\n"
 
     return StreamingResponse(
         event_generator(),
