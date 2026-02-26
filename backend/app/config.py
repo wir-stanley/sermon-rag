@@ -20,7 +20,7 @@ class Settings(BaseSettings):
 
     # --- LLM ---
     llm_provider: str = "google"  # "openai" | "anthropic" | "google"
-    llm_model: str = "gemini-3.1-pro-preview"
+    llm_model: str = "gemini-2.5-pro"
     llm_mini_model: str = "gemini-2.5-flash"  # For lightweight tasks (rewrite, rerank)
     llm_temperature: float = 0.3
     llm_max_tokens: int = 2048
