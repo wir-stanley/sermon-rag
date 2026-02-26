@@ -16,7 +16,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
   return (
     <div
       className={cn(
-        "flex gap-3 px-4 py-4 animate-in fade-in slide-in-from-bottom-4 duration-500",
+        "flex gap-2 sm:gap-3 px-3 sm:px-4 py-4 animate-in fade-in slide-in-from-bottom-4 duration-500",
         isUser ? "justify-end" : "justify-start"
       )}
     >
@@ -28,14 +28,14 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
 
       <div
         className={cn(
-          "max-w-3xl space-y-3",
+          "max-w-3xl space-y-3 min-w-0",
           isUser ? "max-w-xl" : "flex-1"
         )}
       >
         {/* Message content */}
         <div
           className={cn(
-            "rounded-3xl px-7 py-5 shadow-sm backdrop-blur-md transition-all duration-300",
+            "rounded-3xl px-5 sm:px-7 py-5 shadow-sm backdrop-blur-md transition-all duration-300 overflow-hidden break-words",
             isUser
               ? "bg-[#2C2A29] text-[#E5DCD5] font-medium tracking-wide"
               : "bg-white/40 text-[#2C2A29] border border-[#2C2A29]/10"

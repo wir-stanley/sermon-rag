@@ -81,6 +81,8 @@
 /* Prose styling for chat messages */
 .prose-chat {
   @apply text-foreground leading-relaxed;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .prose-chat p {

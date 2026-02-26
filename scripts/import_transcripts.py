@@ -15,8 +15,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "backend"))
 
 from dotenv import load_dotenv
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", "backend", ".env"))
-os.environ["DATABASE_URL"] = "postgresql+asyncpg://postgres:postgres@localhost:5432/sermon_rag"
-os.environ["DATABASE_URL_SYNC"] = "postgresql://postgres:postgres@localhost:5432/sermon_rag"
+# Database URL comes from .env (Supabase)
 
 from sqlalchemy import select
 from app.database import async_session, init_db
