@@ -146,9 +146,30 @@ def _google_chat(messages: list[dict], model: str | None = None,
         elif msg["role"] == "assistant":
             contents.append(types.Content(role="model", parts=[types.Part(text=msg["content"])]))
 
+    # Configure safety settings to avoid blocking innocuous religious queries
+    safety_settings = [
+        types.SafetySetting(
+            category=types.HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+            threshold=types.HarmBlockThreshold.BLOCK_NONE,
+        ),
+        types.SafetySetting(
+            category=types.HarmCategory.HARM_CATEGORY_HARASSMENT,
+            threshold=types.HarmBlockThreshold.BLOCK_NONE,
+        ),
+        types.SafetySetting(
+            category=types.HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+            threshold=types.HarmBlockThreshold.BLOCK_NONE,
+        ),
+        types.SafetySetting(
+            category=types.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+            threshold=types.HarmBlockThreshold.BLOCK_NONE,
+        ),
+    ]
+
     config = types.GenerateContentConfig(
         temperature=temperature,
         max_output_tokens=max_tokens,
+        safety_settings=safety_settings,
     )
     if system_instruction:
         config.system_instruction = system_instruction
@@ -172,6 +193,12 @@ def _google_stream_tokens(stream) -> Generator[str, None, None]:
     for chunk in stream:
         if chunk.text:
             yield chunk.text
+
+        # If the model abruptly finishes for a reason other than STOP or MAX_TOKENS, yield the error
+        if chunk.candidates and chunk.candidates[0].finish_reason:
+            reason = chunk.candidates[0].finish_reason
+            if reason not in ("STOP", "MAX_TOKENS", 1, 2):  # 1 is STOP, 2 is MAX_TOKENS in some enum versions
+                yield f"\n\n[Warning: Gemini stopped generating due to: {reason}]"
 
 
 # ─────────────────────────────────────────────
