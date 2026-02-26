@@ -72,7 +72,6 @@ async def main():
 
     # PDF Subparser
     pdf_parser = subparsers.add_parser("pdf", help="Ingest a directory of PDF sermons")
-    pdf_parser.add_parser("pdf", help="Ingest a directory of PDF sermons")
     pdf_parser.add_argument("--directory", type=str, default=None, help="Absolute path to the local directory containing PDFs.")
     pdf_parser.add_argument("--service-type", type=str, choices=["morning", "afternoon"], default="morning", help="The type of service (Morning KU / Afternoon KU).")
 

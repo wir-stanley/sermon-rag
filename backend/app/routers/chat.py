@@ -128,29 +128,29 @@ async def chat_stream(
             chunk_count = None
 
             async for event in query_sermons_stream(db, request.question, request.language, chat_history=history):
-            yield f"data: {json.dumps(event)}\n\n"
+                yield f"data: {json.dumps(event)}\n\n"
 
-            if event["type"] == "token":
-                full_answer += event["content"]
-            elif event["type"] == "citations":
-                citations_data = event["data"]
-            elif event["type"] == "telemetry":
-                gen_time = event["data"].get("generation_time_ms")
-                chunk_count = event["data"].get("context_chunk_count")
+                if event["type"] == "token":
+                    full_answer += event["content"]
+                elif event["type"] == "citations":
+                    citations_data = event["data"]
+                elif event["type"] == "telemetry":
+                    gen_time = event["data"].get("generation_time_ms")
+                    chunk_count = event["data"].get("context_chunk_count")
 
-        # Persist assistant message only when authenticated
-        if conv:
-            asst_msg = ChatMessage(
-                conversation_id=conv.id, role=MessageRole.ASSISTANT,
-                content=full_answer,
-                citations=citations_data if citations_data else None,
-                generation_time_ms=gen_time,
-                context_chunk_count=chunk_count,
-                language=request.language,
-            )
-            db.add(asst_msg)
-            await db.commit()
-            yield f"data: {json.dumps({'type': 'message_id', 'id': asst_msg.id})}\n\n"
+            # Persist assistant message only when authenticated
+            if conv:
+                asst_msg = ChatMessage(
+                    conversation_id=conv.id, role=MessageRole.ASSISTANT,
+                    content=full_answer,
+                    citations=citations_data if citations_data else None,
+                    generation_time_ms=gen_time,
+                    context_chunk_count=chunk_count,
+                    language=request.language,
+                )
+                db.add(asst_msg)
+                await db.commit()
+                yield f"data: {json.dumps({'type': 'message_id', 'id': asst_msg.id})}\n\n"
 
         except Exception as e:
             yield f"data: {json.dumps({'type': 'token', 'content': f'\\n\\n[Backend Crash: {str(e)}]' })}\n\n"
