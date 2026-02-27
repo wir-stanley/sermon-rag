@@ -3,7 +3,7 @@
 import { useEffect, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useChat } from "@/hooks/useChat";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import MessageList from "@/components/chat/MessageList";
 import ChatInput from "@/components/chat/ChatInput";
 import EmptyChat from "@/components/chat/EmptyChat";
@@ -35,31 +35,11 @@ function ChatContent() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      <AnimatePresence mode="wait">
-        {messages.length === 0 && !initialQuery ? (
-          <motion.div
-            key="empty"
-            className="flex flex-1 flex-col overflow-hidden"
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.3 }}
-          >
-            <EmptyChat onSuggestionClick={sendMessage} />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="messages"
-            className="flex flex-1 flex-col overflow-hidden"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-          >
-            <MessageList messages={messages} isStreaming={isStreaming} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {messages.length === 0 && !initialQuery ? (
+        <EmptyChat onSuggestionClick={sendMessage} />
+      ) : (
+        <MessageList messages={messages} />
+      )}
       <ChatInput
         onSend={sendMessage}
         onStop={stopStreaming}

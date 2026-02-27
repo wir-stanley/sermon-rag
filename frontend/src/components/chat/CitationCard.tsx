@@ -1,11 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { FileText, Youtube, Calendar, User, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
-import LottieAnimation from "@/components/ui/lottie-animation";
-import { citationGlow, chainLinks } from "@/lib/animations";
+import { motion } from "framer-motion";
 import type { SourceCitation } from "@/types";
 
 interface CitationCardProps {
@@ -15,7 +13,8 @@ interface CitationCardProps {
 
 export default function CitationCard({ citation, index }: CitationCardProps) {
   const [expanded, setExpanded] = useState(false);
-  const [showChainLinks, setShowChainLinks] = useState(false);
+  const excerptRef = useRef<HTMLParagraphElement>(null);
+  const [excerptHeight, setExcerptHeight] = useState<number>(0);
 
   const isYoutube = citation.source_type === "youtube";
   const Icon = isYoutube ? Youtube : FileText;
@@ -25,55 +24,31 @@ export default function CitationCard({ citation, index }: CitationCardProps) {
       ? "Morning Service"
       : "Afternoon Service";
 
-  const handleToggle = () => {
-    setExpanded(!expanded);
-  };
+  useEffect(() => {
+    if (excerptRef.current) {
+      setExcerptHeight(excerptRef.current.scrollHeight);
+    }
+  }, [citation.excerpt]);
+
+  const collapsedHeight = 40;
 
   return (
     <motion.div
-      onClick={handleToggle}
+      onClick={() => setExpanded(!expanded)}
       className={cn(
-        "group rounded-lg border bg-card/50 p-3 shadow-sm backdrop-blur-sm cursor-pointer transition-all duration-300 ease-in-out relative overflow-hidden",
+        "group rounded-lg border bg-card/50 p-3 shadow-sm backdrop-blur-sm cursor-pointer transition-all duration-300 ease-in-out",
         expanded
           ? "border-gold-500/30 bg-card/70 shadow-[0_0_12px_hsl(43_74%_49%/0.08)]"
           : "border-border hover:border-foreground/20"
       )}
       layout
-      transition={{ layout: { type: "spring", stiffness: 300, damping: 30 } }}
+      transition={{ layout: { duration: 0.3 } }}
     >
-      {/* Citation glow overlay on expand */}
-      <AnimatePresence>
-        {expanded && (
-          <motion.div
-            className="absolute inset-0 pointer-events-none z-0"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <LottieAnimation
-              animationData={citationGlow}
-              loop={false}
-              className="w-full h-full"
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <div className="flex items-start gap-2 relative z-10">
-        {/* Index badge with pop-in */}
-        <motion.span
-          className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-foreground/10 text-[10px] font-bold text-foreground"
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{
-            type: "spring",
-            stiffness: 500,
-            damping: 15,
-            delay: index * 0.05,
-          }}
-        >
+      <div className="flex items-start gap-2">
+        {/* Index badge */}
+        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-foreground/10 text-[10px] font-bold text-foreground">
           {index + 1}
-        </motion.span>
+        </span>
 
         <div className="min-w-0 flex-1 space-y-1.5 pt-0.5">
           {/* Title */}
@@ -84,21 +59,8 @@ export default function CitationCard({ citation, index }: CitationCardProps) {
             {citation.title}
           </p>
 
-          {/* Metadata row with chain-links hover */}
-          <div
-            className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-medium text-muted-foreground relative"
-            onMouseEnter={() => setShowChainLinks(true)}
-            onMouseLeave={() => setShowChainLinks(false)}
-          >
-            {showChainLinks && (
-              <div className="absolute inset-0 pointer-events-none opacity-20">
-                <LottieAnimation
-                  animationData={chainLinks}
-                  loop={false}
-                  className="h-full w-10"
-                />
-              </div>
-            )}
+          {/* Metadata row */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-medium text-muted-foreground">
             <span className="flex items-center gap-1">
               <Icon className="h-3 w-3" />
               {typeLabel}
@@ -123,43 +85,31 @@ export default function CitationCard({ citation, index }: CitationCardProps) {
             )}
           </div>
 
-          {/* Excerpt with Framer AnimatePresence height animation */}
-          <AnimatePresence initial={false}>
-            {expanded && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{
-                  type: "spring",
-                  stiffness: 300,
-                  damping: 30,
-                  opacity: { duration: 0.2 },
-                }}
-                className="overflow-hidden"
-              >
-                <p className="text-[12px] font-medium text-foreground/70 leading-relaxed mt-2 italic">
-                  &ldquo;{citation.excerpt}&rdquo;
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Collapsed excerpt preview */}
-          {!expanded && (
-            <p className="text-[12px] font-medium text-foreground/70 leading-relaxed mt-1 italic line-clamp-2">
+          {/* Excerpt with smooth height animation */}
+          <div
+            className="overflow-hidden transition-[max-height] duration-400 ease-in-out"
+            style={{
+              maxHeight: expanded
+                ? `${excerptHeight + 8}px`
+                : `${collapsedHeight}px`,
+            }}
+          >
+            <p
+              ref={excerptRef}
+              className="text-[12px] font-medium text-foreground/70 leading-relaxed mt-2 italic"
+            >
               &ldquo;{citation.excerpt}&rdquo;
             </p>
-          )}
+          </div>
         </div>
 
         {/* Expand indicator */}
-        <motion.div
-          animate={{ rotate: expanded ? 180 : 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground mt-0.5" />
-        </motion.div>
+        <ChevronDown
+          className={cn(
+            "h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-300 ease-in-out mt-0.5",
+            expanded && "rotate-180"
+          )}
+        />
       </div>
     </motion.div>
   );
