@@ -104,12 +104,12 @@ export default function HomePage() {
 
         {/* Title */}
         <motion.h1
-          className="font-cinzel font-bold text-sm tracking-tight uppercase text-foreground mb-4"
+          className="font-cinzel font-bold text-sm tracking-tight uppercase shimmer-text mb-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          REFORMED.AI
+          REFORMED.AI<sup className="text-[8px] align-super">®</sup>
         </motion.h1>
 
         {/* Subtitle */}
