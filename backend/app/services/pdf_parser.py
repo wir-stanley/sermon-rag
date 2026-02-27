@@ -50,6 +50,7 @@ SPEAKER_MAP = {
     "BK": "Pdt. Billy Kristanto",
     "TS": "Pdt. Tony Salim",
     "JK": "Pdt. Jimmy Kuswadi",
+    "ST": "Pdt. Dr. Stephen Tong",
 }
 
 
@@ -118,13 +119,25 @@ def extract_text_from_pdf(file_path: str) -> ParsedSermon:
     if title_match:
         title = title_match.group(1).strip()
 
-    # Try extracting speaker from text (Pdt. XXX pattern)
+    # Try extracting speaker from text (Pdt. XXX / Pdt. Dr. XXX pattern)
     speaker = ""
-    speaker_text_match = re.search(r"Pdt\.\s+([A-Za-z\s]+?)(?:\n|$)", full_text)
+    speaker_text_match = re.search(
+        r"(?:Pdt|Pendeta|Rev)\.?\s+(?:Dr\.?\s+)?([A-Za-z][A-Za-z\.\s]+?)(?:\n|,|$)",
+        full_text[:1500],
+    )
     if speaker_text_match:
-        speaker = f"Pdt. {speaker_text_match.group(1).strip()}"
+        raw_name = speaker_text_match.group(1).strip()
+        # Check if "Dr." was in the match to preserve it
+        full_match = speaker_text_match.group(0).strip()
+        if "Dr" in full_match:
+            speaker = f"Pdt. Dr. {raw_name}"
+        else:
+            speaker = f"Pdt. {raw_name}"
     elif file_info["speaker_code"] in SPEAKER_MAP:
         speaker = SPEAKER_MAP[file_info["speaker_code"]]
+    elif file_info["source_type"] == "pdf_morning":
+        # Default to Stephen Tong for morning service (main preacher)
+        speaker = "Pdt. Dr. Stephen Tong"
 
     # Try extracting scripture reference
     scripture_ref = ""
