@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useRef, KeyboardEvent } from "react";
+import { useState, useRef, useEffect, KeyboardEvent } from "react";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { Send, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { SUGGESTED_QUESTIONS } from "@/lib/constants";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -21,9 +22,19 @@ export default function ChatInput({
   disabled,
 }: ChatInputProps) {
   const [value, setValue] = useState("");
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { isSignedIn } = useUser();
   const { redirectToSignIn } = useClerk();
+
+  // Cycle through suggested questions as placeholder
+  useEffect(() => {
+    if (value) return;
+    const interval = setInterval(() => {
+      setPlaceholderIndex((prev) => (prev + 1) % SUGGESTED_QUESTIONS.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [value]);
 
   function handleSubmit() {
     const trimmed = value.trim();
@@ -60,19 +71,38 @@ export default function ChatInput({
     <div className="w-full p-6 pb-8 bg-transparent">
       <div className="mx-auto flex max-w-3xl items-end gap-2 relative">
         <div className="relative flex w-full items-center bg-transparent border border-border rounded-full focus-within:border-gold-500/60 focus-within:bg-card/50 focus-within:shadow-[0_0_20px_hsl(43_74%_49%/0.08)] transition-all duration-500 py-2 px-6 shadow-sm hover:border-foreground/30 hover:shadow-md">
-          <Textarea
-            ref={textareaRef}
-            value={value}
-            onChange={(e) => {
-              setValue(e.target.value);
-              handleInput();
-            }}
-            onKeyDown={handleKeyDown}
-            placeholder="Tanyakan tentang kebenaran teologis..."
-            disabled={disabled}
-            rows={1}
-            className="min-h-[44px] max-h-[200px] w-full resize-none border-none bg-transparent text-[15px] font-medium tracking-wide text-foreground placeholder:text-muted-foreground focus-visible:ring-0 px-0 py-3 font-sans outline-none"
-          />
+          <div className="relative w-full">
+            <Textarea
+              ref={textareaRef}
+              value={value}
+              onChange={(e) => {
+                setValue(e.target.value);
+                handleInput();
+              }}
+              onKeyDown={handleKeyDown}
+              placeholder=""
+              disabled={disabled}
+              rows={1}
+              className="min-h-[44px] max-h-[200px] w-full resize-none border-none bg-transparent text-[15px] font-medium tracking-wide text-foreground placeholder:text-muted-foreground focus-visible:ring-0 px-0 py-3 font-sans outline-none relative z-10"
+            />
+            {/* Cycling placeholder */}
+            {!value && (
+              <div className="absolute inset-0 flex items-center pointer-events-none py-3">
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={placeholderIndex}
+                    className="text-[15px] font-medium tracking-wide text-muted-foreground"
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {SUGGESTED_QUESTIONS[placeholderIndex]}
+                  </motion.span>
+                </AnimatePresence>
+              </div>
+            )}
+          </div>
           {isStreaming ? (
             <Button
               onClick={onStop}
