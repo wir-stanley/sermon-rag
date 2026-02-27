@@ -3,10 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronRight, MessageSquare } from "lucide-react";
 import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { SUGGESTED_QUESTIONS } from "@/lib/constants";
 import LottieAnimation from "@/components/ui/lottie-animation";
 import ThemeToggle from "@/components/ui/theme-toggle";
 import { heroLightRays, particlesAmbient } from "@/lib/animations";
@@ -14,6 +15,15 @@ import { heroLightRays, particlesAmbient } from "@/lib/animations";
 export default function HomePage() {
   const router = useRouter();
   const [query, setQuery] = useState("");
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+
+  useEffect(() => {
+    if (query) return;
+    const interval = setInterval(() => {
+      setPlaceholderIndex((prev) => (prev + 1) % SUGGESTED_QUESTIONS.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [query]);
 
   const handleSearch = () => {
     if (query.trim()) {
@@ -132,14 +142,32 @@ export default function HomePage() {
           transition={{ duration: 0.6, delay: 0.6 }}
         >
           <div className="relative flex items-center bg-transparent border border-foreground/20 rounded-full group-focus-within:border-gold-500/60 group-focus-within:bg-card/50 group-focus-within:shadow-[0_0_20px_hsl(43_74%_49%/0.1)] transition-all duration-500 py-3 px-6 shadow-sm hover:border-foreground/40 hover:shadow-md">
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Tuliskan pertanyaan Anda di sini..."
-              className="w-full bg-transparent text-[15px] font-medium tracking-wide text-foreground placeholder:text-foreground/40 outline-none pr-4"
-            />
+            <div className="relative w-full">
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder=""
+                className="w-full bg-transparent text-[15px] font-medium tracking-wide text-foreground outline-none pr-4 relative z-10"
+              />
+              {!query && (
+                <div className="absolute inset-0 flex items-center pointer-events-none">
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={placeholderIndex}
+                      className="text-[15px] font-medium tracking-wide text-foreground/40"
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {SUGGESTED_QUESTIONS[placeholderIndex]}
+                    </motion.span>
+                  </AnimatePresence>
+                </div>
+              )}
+            </div>
             <motion.button
               onClick={handleSearch}
               className="p-2 -mr-3 text-primary-foreground bg-foreground dark:bg-primary rounded-full transition-all duration-300 outline-none shadow-sm flex items-center justify-center"
