@@ -12,7 +12,7 @@ from starlette.requests import Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth import get_current_user
+from app.auth import get_optional_user
 from app.database import get_db
 from app.models import User, Conversation, ChatMessage, MessageRole
 from app.rate_limit import limiter, CHAT_LIMIT_AUTH
@@ -86,9 +86,11 @@ async def chat(
     request_obj: Request,
     request: ChatRequest,
     db: AsyncSession = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: Optional[User] = Depends(get_optional_user),
 ):
     """Ask a question about sermon content. Requires authentication."""
+    if not user:
+        raise HTTPException(status_code=401, detail="Sign in to use the chatbot")
     request.question = _sanitize_question(request.question)
 
     # Fetch conversation history for context
@@ -121,9 +123,11 @@ async def chat_stream(
     request_obj: Request,
     request: ChatRequest,
     db: AsyncSession = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: Optional[User] = Depends(get_optional_user),
 ):
     """Streaming version — sends answer tokens as server-sent events. Requires authentication."""
+    if not user:
+        raise HTTPException(status_code=401, detail="Sign in to use the chatbot")
     request.question = _sanitize_question(request.question)
 
     # Fetch conversation history for context
