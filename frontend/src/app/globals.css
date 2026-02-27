@@ -84,7 +84,7 @@
   }
 }
 
-/* Custom scrollbar - theme-aware */
+/* Custom scrollbar - theme-aware with gold hover */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -96,10 +96,11 @@
 ::-webkit-scrollbar-thumb {
   background: hsl(var(--foreground) / 0.15);
   border-radius: 3px;
+  transition: background 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--foreground) / 0.25);
+  background: linear-gradient(180deg, hsl(var(--gold) / 0.4), hsl(var(--gold) / 0.6));
 }
 
 /* Theme-aware selection */
@@ -202,10 +203,16 @@
   box-shadow: 0 20px 40px hsl(var(--foreground) / 0.08);
 }
 
-/* Gold focus ring */
+/* Gold focus ring with animated expansion */
 .focus-gold:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--gold) / 0.5);
+  animation: focus-ring-expand 0.6s ease-out;
+}
+
+@keyframes focus-ring-expand {
+  0% { box-shadow: 0 0 0 0px hsl(var(--background)), 0 0 0 0px hsl(var(--gold) / 0.5); }
+  100% { box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--gold) / 0.5); }
 }
 
 /* Shimmer animation for skeleton */
@@ -244,4 +251,63 @@
   -webkit-background-clip: text;
   background-clip: text;
   animation: text-shimmer 6s linear infinite;
+}
+
+/* Enhanced shimmer skeleton with gold tint */
+.animate-shimmer-gold {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 25%,
+    hsl(var(--gold) / 0.12) 50%,
+    hsl(var(--muted)) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+/* Animated gradient background for chat area */
+.chat-ambient-gradient {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--background)) 0%,
+    hsl(var(--gold) / 0.02) 25%,
+    hsl(var(--background)) 50%,
+    hsl(var(--gold) / 0.03) 75%,
+    hsl(var(--background)) 100%
+  );
+  background-size: 400% 400%;
+  animation: gradient-shift 15s ease infinite;
+}
+
+/* Streaming glow border effect */
+.streaming-glow-border {
+  animation: streaming-glow 2s ease-in-out infinite;
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .animate-shimmer,
+  .animate-shimmer-gold,
+  .shimmer-text,
+  .streaming-cursor::after,
+  .chat-ambient-gradient,
+  .streaming-glow-border {
+    animation: none !important;
+  }
+
+  .animate-float-gentle,
+  .animate-float,
+  .animate-glow-pulse {
+    animation: none !important;
+  }
+}
+
+/* Dark mode Lottie adaptation */
+.dark .lottie-ambient {
+  filter: brightness(1.25);
+}
+
+/* GPU compositing for ambient Lotties */
+.lottie-ambient {
+  will-change: transform;
 }

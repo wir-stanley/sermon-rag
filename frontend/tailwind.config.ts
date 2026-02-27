@@ -106,6 +106,30 @@ const config: Config = {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-5px)" },
         },
+        "gradient-shift": {
+          "0%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+          "100%": { backgroundPosition: "0% 50%" },
+        },
+        "magnetic-pull": {
+          "0%, 100%": { transform: "translate(0, 0)" },
+          "50%": { transform: "translate(var(--mx, 0), var(--my, 0))" },
+        },
+        shake: {
+          "0%, 100%": { transform: "translateX(0)" },
+          "20%": { transform: "translateX(-4px)" },
+          "40%": { transform: "translateX(4px)" },
+          "60%": { transform: "translateX(-4px)" },
+          "80%": { transform: "translateX(4px)" },
+        },
+        "streaming-glow": {
+          "0%, 100%": { boxShadow: "0 0 0px hsl(43 74% 49% / 0)" },
+          "50%": { boxShadow: "0 0 12px hsl(43 74% 49% / 0.15)" },
+        },
+        "focus-ring-expand": {
+          "0%": { boxShadow: "0 0 0 0px hsl(43 74% 49% / 0.4)" },
+          "100%": { boxShadow: "0 0 0 4px hsl(43 74% 49% / 0)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -117,6 +141,10 @@ const config: Config = {
         shimmer: "shimmer 2s ease-in-out infinite",
         "glow-pulse": "glow-pulse 3s ease-in-out infinite",
         "float-gentle": "float-gentle 4s ease-in-out infinite",
+        "gradient-shift": "gradient-shift 15s ease infinite",
+        shake: "shake 0.4s ease-in-out",
+        "streaming-glow": "streaming-glow 2s ease-in-out infinite",
+        "focus-ring-expand": "focus-ring-expand 0.6s ease-out forwards",
       },
     },
   },

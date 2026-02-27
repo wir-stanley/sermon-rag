@@ -4,10 +4,12 @@ import { useEffect, useState, use } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { getConversation } from "@/lib/api";
 import { useChat } from "@/hooks/useChat";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import MessageList from "@/components/chat/MessageList";
 import ChatInput from "@/components/chat/ChatInput";
-import { Skeleton } from "@/components/ui/skeleton";
+import MessageSkeleton from "@/components/chat/MessageSkeleton";
+import LottieAnimation from "@/components/ui/lottie-animation";
+import { scrollLoading } from "@/lib/animations";
 import type { Message } from "@/types";
 
 export default function ConversationPage({
@@ -68,22 +70,6 @@ export default function ConversationPage({
     };
   }, [convId, setMessages, setConversationId, getToken, isLoaded]);
 
-  if (loading) {
-    return (
-      <div className="flex flex-1 flex-col gap-4 p-6">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="flex gap-3">
-            <Skeleton className="h-8 w-8 rounded-lg" />
-            <div className="flex-1 space-y-2">
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
   return (
     <motion.div
       className="flex flex-1 flex-col overflow-hidden"
@@ -91,12 +77,48 @@ export default function ConversationPage({
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      <MessageList messages={messages} />
-      <ChatInput
-        onSend={sendMessage}
-        onStop={stopStreaming}
-        isStreaming={isStreaming}
-      />
+      <AnimatePresence mode="wait">
+        {loading ? (
+          <motion.div
+            key="loading"
+            className="flex flex-1 flex-col items-center justify-center gap-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.3 }}
+          >
+            {/* Cinematic scroll loading Lottie */}
+            <LottieAnimation
+              animationData={scrollLoading}
+              className="h-[120px] w-[120px] opacity-60"
+            />
+            {/* Staggered message skeletons */}
+            <MessageSkeleton count={3} />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="content"
+            className="flex flex-1 flex-col overflow-hidden"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              type: "spring",
+              stiffness: 300,
+              damping: 30,
+              staggerChildren: 0.08,
+            }}
+          >
+            <MessageList messages={messages} isStreaming={isStreaming} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {!loading && (
+        <ChatInput
+          onSend={sendMessage}
+          onStop={stopStreaming}
+          isStreaming={isStreaming}
+        />
+      )}
     </motion.div>
   );
 }

@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { User, Copy, Check } from "lucide-react";
+import { useState, useRef } from "react";
+import { Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import CitationList from "./CitationList";
 import FeedbackButtons from "./FeedbackButtons";
 import LottieAnimation from "@/components/ui/lottie-animation";
-import { crossGlow, thinkingDove } from "@/lib/animations";
+import { crossGlow, thinkingDove, shieldCrest, successBurst } from "@/lib/animations";
 import type { Message } from "@/types";
 
 interface MessageBubbleProps {
@@ -17,12 +17,17 @@ interface MessageBubbleProps {
 export default function MessageBubble({ message }: MessageBubbleProps) {
   const isUser = message.role === "user";
   const [copied, setCopied] = useState(false);
+  const [showCopyBurst, setShowCopyBurst] = useState(false);
+  const [codeBlockCopied, setCodeBlockCopied] = useState<string | null>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(message.content);
       setCopied(true);
+      setShowCopyBurst(true);
       setTimeout(() => setCopied(false), 2000);
+      setTimeout(() => setShowCopyBurst(false), 1200);
     } catch {
       const textarea = document.createElement("textarea");
       textarea.value = message.content;
@@ -35,23 +40,41 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
     }
   };
 
+  const handleCodeBlockCopy = async (code: string) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCodeBlockCopied(code);
+      setTimeout(() => setCodeBlockCopied(null), 2000);
+    } catch { /* fallback not needed for code blocks */ }
+  };
+
   return (
     <motion.div
       className={cn(
         "flex gap-2 sm:gap-3 px-3 sm:px-4 py-4",
         isUser ? "justify-end" : "justify-start"
       )}
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
+      initial={{ opacity: 0, y: 20, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -10, scale: 0.98 }}
+      transition={{
+        type: "spring",
+        stiffness: 400,
+        damping: 30,
+      }}
     >
+      {/* AI avatar with breathing pulse */}
       {!isUser && (
-        <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-card/80 border border-border text-foreground backdrop-blur-md shadow-sm overflow-hidden">
+        <motion.div
+          className="mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-card/80 border border-border text-foreground backdrop-blur-md shadow-sm overflow-hidden"
+          animate={{ scale: [1, 1.05, 1] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        >
           <LottieAnimation
             animationData={crossGlow}
-            className="h-10 w-10"
+            className="h-11 w-11"
           />
-        </div>
+        </motion.div>
       )}
 
       <div
@@ -60,21 +83,23 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
           isUser ? "max-w-xl" : "flex-1"
         )}
       >
-        {/* Message content */}
+        {/* Message content with streaming glow */}
         <div
           className={cn(
             "rounded-3xl px-5 sm:px-7 py-5 shadow-sm backdrop-blur-md transition-all duration-300 overflow-hidden break-words",
             isUser
               ? "bg-[hsl(var(--message-user-bg))] text-[hsl(var(--message-user-text))] font-medium tracking-wide"
-              : "bg-[hsl(var(--message-assistant-bg))] text-foreground border border-border/50"
+              : "bg-[hsl(var(--message-assistant-bg))] text-foreground border border-border/50",
+            !isUser && message.isStreaming && message.content && "streaming-glow-border"
           )}
         >
           {isUser ? (
             <p className="text-[15px] leading-relaxed">{message.content}</p>
           ) : (
             <div
+              ref={contentRef}
               className={cn(
-                "prose-chat text-[15px] leading-relaxed tracking-wide font-sans text-inherit",
+                "prose-chat text-[15px] leading-relaxed tracking-wide font-sans text-inherit relative",
                 message.isStreaming && !message.content && "text-foreground/40"
               )}
             >
@@ -82,7 +107,17 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
                 <div
                   className={message.isStreaming ? "streaming-cursor" : ""}
                   dangerouslySetInnerHTML={{
-                    __html: formatMarkdown(message.content),
+                    __html: formatMarkdownWithCopyButtons(message.content),
+                  }}
+                  onClick={(e) => {
+                    const target = e.target as HTMLElement;
+                    if (target.classList.contains("code-copy-btn")) {
+                      const pre = target.closest("pre");
+                      if (pre) {
+                        const code = pre.querySelector("code")?.textContent || "";
+                        handleCodeBlockCopy(code);
+                      }
+                    }
                   }}
                 />
               ) : (
@@ -104,11 +139,22 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
 
         {/* Action bar: Copy + Feedback */}
         {!isUser && !message.isStreaming && message.content && (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 relative">
+            {/* Copy burst */}
+            {showCopyBurst && (
+              <div className="absolute -top-4 -left-2 pointer-events-none z-10">
+                <LottieAnimation
+                  animationData={successBurst}
+                  loop={false}
+                  className="h-[50px] w-[50px]"
+                />
+              </div>
+            )}
             <motion.button
               onClick={handleCopy}
               className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-all duration-200"
               title={copied ? "Copied!" : "Copy answer"}
+              whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
             >
               {copied ? (
@@ -131,19 +177,23 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
         )}
       </div>
 
+      {/* User avatar with shield-crest Lottie */}
       {isUser && (
-        <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-foreground text-background shadow-sm dark:bg-primary dark:text-primary-foreground">
-          <User className="h-4 w-4" />
+        <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-foreground text-background shadow-sm dark:bg-primary dark:text-primary-foreground overflow-hidden">
+          <LottieAnimation
+            animationData={shieldCrest}
+            className="h-8 w-8"
+          />
         </div>
       )}
     </motion.div>
   );
 }
 
-/** Simple markdown to HTML for assistant messages */
-function formatMarkdown(text: string): string {
+/** Simple markdown to HTML with copy buttons on code blocks */
+function formatMarkdownWithCopyButtons(text: string): string {
   return text
-    .replace(/```(\w*)\n([\s\S]*?)```/g, "<pre><code>$2</code></pre>")
+    .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre class="relative group"><button class="code-copy-btn absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] px-2 py-1 rounded bg-foreground/10 hover:bg-foreground/20 text-foreground/70 cursor-pointer">Copy</button><code>$2</code></pre>')
     .replace(/`([^`]+)`/g, "<code>$1</code>")
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
