@@ -32,13 +32,9 @@ limiter = Limiter(
 )
 
 # --- Rate limit strings ---
-# Authenticated users: generous limits
+# Authenticated users
 CHAT_LIMIT_AUTH = "30/minute;200/hour;500/day"
-# Anonymous users: restrictive
-CHAT_LIMIT_ANON = "5/minute;30/hour;100/day"
-# Streaming endpoint (same concept)
 STREAM_LIMIT_AUTH = "30/minute;200/hour;500/day"
-STREAM_LIMIT_ANON = "5/minute;30/hour;100/day"
 # Feedback (light endpoint)
 FEEDBACK_LIMIT = "60/minute"
 # History (read-only)

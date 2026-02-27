@@ -12,10 +12,10 @@ from starlette.requests import Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth import get_optional_user
+from app.auth import get_current_user
 from app.database import get_db
 from app.models import User, Conversation, ChatMessage, MessageRole
-from app.rate_limit import limiter, CHAT_LIMIT_AUTH, CHAT_LIMIT_ANON
+from app.rate_limit import limiter, CHAT_LIMIT_AUTH
 from app.schemas import ChatRequest, ChatResponse
 from app.services.query_engine import query_sermons, query_sermons_stream
 
@@ -34,11 +34,7 @@ def _sanitize_question(question: str) -> str:
     return q
 
 
-def _dynamic_chat_limit(key: str) -> str:
-    """Return different rate limits for authenticated vs anonymous users."""
-    if key.startswith("user:"):
-        return CHAT_LIMIT_AUTH
-    return CHAT_LIMIT_ANON
+
 
 
 async def _fetch_chat_history(
@@ -85,14 +81,14 @@ async def _get_or_create_conversation(
 
 
 @router.post("", response_model=ChatResponse)
-@limiter.limit(dynamic_limits=_dynamic_chat_limit)
+@limiter.limit(CHAT_LIMIT_AUTH)
 async def chat(
     request_obj: Request,
     request: ChatRequest,
     db: AsyncSession = Depends(get_db),
-    user: Optional[User] = Depends(get_optional_user),
+    user: User = Depends(get_current_user),
 ):
-    """Ask a question about sermon content. Returns a grounded answer with citations."""
+    """Ask a question about sermon content. Requires authentication."""
     request.question = _sanitize_question(request.question)
 
     # Fetch conversation history for context
@@ -100,54 +96,50 @@ async def chat(
 
     result = await query_sermons(db, request.question, request.language, chat_history=history)
 
-    # Persist conversation only when authenticated
-    if user:
-        conv = await _get_or_create_conversation(db, user, request.conversation_id, request.question)
-        db.add(ChatMessage(
-            conversation_id=conv.id, role=MessageRole.USER,
-            content=request.question, language=request.language,
-        ))
-        db.add(ChatMessage(
-            conversation_id=conv.id, role=MessageRole.ASSISTANT,
-            content=result["answer"],
-            citations=result.get("citations"),
-            generation_time_ms=result.get("generation_time_ms"),
-            context_chunk_count=result.get("context_chunk_count"),
-            language=result.get("language"),
-        ))
-        await db.commit()
+    # Persist conversation
+    conv = await _get_or_create_conversation(db, user, request.conversation_id, request.question)
+    db.add(ChatMessage(
+        conversation_id=conv.id, role=MessageRole.USER,
+        content=request.question, language=request.language,
+    ))
+    db.add(ChatMessage(
+        conversation_id=conv.id, role=MessageRole.ASSISTANT,
+        content=result["answer"],
+        citations=result.get("citations"),
+        generation_time_ms=result.get("generation_time_ms"),
+        context_chunk_count=result.get("context_chunk_count"),
+        language=result.get("language"),
+    ))
+    await db.commit()
 
     return ChatResponse(**result)
 
 
 @router.post("/stream")
-@limiter.limit(dynamic_limits=_dynamic_chat_limit)
+@limiter.limit(CHAT_LIMIT_AUTH)
 async def chat_stream(
     request_obj: Request,
     request: ChatRequest,
     db: AsyncSession = Depends(get_db),
-    user: Optional[User] = Depends(get_optional_user),
+    user: User = Depends(get_current_user),
 ):
-    """Streaming version — sends answer tokens as server-sent events."""
+    """Streaming version — sends answer tokens as server-sent events. Requires authentication."""
     request.question = _sanitize_question(request.question)
 
     # Fetch conversation history for context
     history = await _fetch_chat_history(db, request.conversation_id, user)
 
-    # Set up conversation persistence only when authenticated
-    conv = None
-    if user:
-        conv = await _get_or_create_conversation(db, user, request.conversation_id, request.question)
-        db.add(ChatMessage(
-            conversation_id=conv.id, role=MessageRole.USER,
-            content=request.question, language=request.language,
-        ))
-        await db.commit()
+    # Persist user message
+    conv = await _get_or_create_conversation(db, user, request.conversation_id, request.question)
+    db.add(ChatMessage(
+        conversation_id=conv.id, role=MessageRole.USER,
+        content=request.question, language=request.language,
+    ))
+    await db.commit()
 
     async def event_generator():
         try:
-            if conv:
-                yield f"data: {json.dumps({'type': 'conversation', 'conversation_id': conv.id})}\n\n"
+            yield f"data: {json.dumps({'type': 'conversation', 'conversation_id': conv.id})}\n\n"
 
             full_answer = ""
             citations_data = []
@@ -165,19 +157,18 @@ async def chat_stream(
                     gen_time = event["data"].get("generation_time_ms")
                     chunk_count = event["data"].get("context_chunk_count")
 
-            # Persist assistant message only when authenticated
-            if conv:
-                asst_msg = ChatMessage(
-                    conversation_id=conv.id, role=MessageRole.ASSISTANT,
-                    content=full_answer,
-                    citations=citations_data if citations_data else None,
-                    generation_time_ms=gen_time,
-                    context_chunk_count=chunk_count,
-                    language=request.language,
-                )
-                db.add(asst_msg)
-                await db.commit()
-                yield f"data: {json.dumps({'type': 'message_id', 'id': asst_msg.id})}\n\n"
+            # Persist assistant message
+            asst_msg = ChatMessage(
+                conversation_id=conv.id, role=MessageRole.ASSISTANT,
+                content=full_answer,
+                citations=citations_data if citations_data else None,
+                generation_time_ms=gen_time,
+                context_chunk_count=chunk_count,
+                language=request.language,
+            )
+            db.add(asst_msg)
+            await db.commit()
+            yield f"data: {json.dumps({'type': 'message_id', 'id': asst_msg.id})}\n\n"
 
         except Exception as e:
             yield f"data: {json.dumps({'type': 'token', 'content': f'\\n\\n[Backend Crash: {str(e)}]' })}\n\n"
