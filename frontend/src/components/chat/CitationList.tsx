@@ -15,7 +15,7 @@ export default function CitationList({ citations }: CitationListProps) {
       <p className="text-xs font-semibold text-[#2C2A29]/50 uppercase tracking-wider">
         Sources
       </p>
-      <div className="grid gap-2 sm:grid-cols-2">
+      <div className="grid gap-2 sm:grid-cols-2 items-start">
         {citations.map((citation, i) => (
           <CitationCard key={citation.source_id} citation={citation} index={i} />
         ))}
