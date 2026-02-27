@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, KeyboardEvent } from "react";
+import { useUser, useClerk } from "@clerk/nextjs";
 import { Send, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,10 +21,19 @@ export default function ChatInput({
 }: ChatInputProps) {
   const [value, setValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { isSignedIn } = useUser();
+  const { redirectToSignIn } = useClerk();
 
   function handleSubmit() {
     const trimmed = value.trim();
     if (!trimmed || disabled) return;
+
+    // Redirect to sign-in if not authenticated
+    if (!isSignedIn) {
+      redirectToSignIn();
+      return;
+    }
+
     onSend(trimmed);
     setValue("");
     // Reset textarea height
