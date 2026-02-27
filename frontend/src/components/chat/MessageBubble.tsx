@@ -1,6 +1,7 @@
 "use client";
 
-import { User, BookOpen } from "lucide-react";
+import { useState } from "react";
+import { User, BookOpen, Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import CitationList from "./CitationList";
 import FeedbackButtons from "./FeedbackButtons";
@@ -12,6 +13,25 @@ interface MessageBubbleProps {
 
 export default function MessageBubble({ message }: MessageBubbleProps) {
   const isUser = message.role === "user";
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(message.content);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback for older browsers
+      const textarea = document.createElement("textarea");
+      textarea.value = message.content;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   return (
     <div
@@ -73,12 +93,31 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
           <CitationList citations={message.citations} />
         )}
 
-        {/* Feedback */}
+        {/* Action bar: Copy + Feedback */}
         {!isUser && !message.isStreaming && message.content && (
-          <FeedbackButtons
-            messageId={message.serverMessageId}
-            initialFeedback={message.feedback}
-          />
+          <div className="flex items-center gap-1">
+            <button
+              onClick={handleCopy}
+              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-[#2C2A29]/50 hover:text-[#2C2A29] hover:bg-[#2C2A29]/5 transition-all duration-200"
+              title={copied ? "Copied!" : "Copy answer"}
+            >
+              {copied ? (
+                <>
+                  <Check className="h-3.5 w-3.5 text-green-600" />
+                  <span className="text-green-600">Copied</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="h-3.5 w-3.5" />
+                  <span>Copy</span>
+                </>
+              )}
+            </button>
+            <FeedbackButtons
+              messageId={message.serverMessageId}
+              initialFeedback={message.feedback}
+            />
+          </div>
         )}
       </div>
 
