@@ -41,8 +41,11 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
       )}
     >
       {!isUser && (
-        <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/60 border border-[#2C2A29]/10 text-[#2C2A29] backdrop-blur-md shadow-sm">
-          <BookOpen className="h-4 w-4" />
+        <div className="relative mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/60 border border-[#2C2A29]/10 text-[#2C2A29] backdrop-blur-md shadow-sm">
+          {message.isStreaming && !message.content && (
+            <div className="absolute inset-0 rounded-full bg-[#2C2A29]/5 animate-ping opacity-75"></div>
+          )}
+          <BookOpen className="h-4 w-4 relative z-10" />
         </div>
       )}
 
@@ -78,11 +81,11 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
                   }}
                 />
               ) : (
-                <span className="flex items-center gap-1 h-6 px-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#2C2A29]/50 animate-bounce" style={{ animationDelay: "0ms" }} />
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#2C2A29]/50 animate-bounce" style={{ animationDelay: "150ms" }} />
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#2C2A29]/50 animate-bounce" style={{ animationDelay: "300ms" }} />
-                </span>
+                <div className="flex items-center gap-1.5 h-6 px-1">
+                  <span className="h-2 w-2 rounded-full bg-[#2C2A29]/60 animate-[glow-pulse_1.5s_ease-in-out_infinite]" style={{ animationDelay: "0ms" }} />
+                  <span className="h-2 w-2 rounded-full bg-[#2C2A29]/60 animate-[glow-pulse_1.5s_ease-in-out_infinite]" style={{ animationDelay: "200ms" }} />
+                  <span className="h-2 w-2 rounded-full bg-[#2C2A29]/60 animate-[glow-pulse_1.5s_ease-in-out_infinite]" style={{ animationDelay: "400ms" }} />
+                </div>
               )}
             </div>
           )}
@@ -95,22 +98,22 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
 
         {/* Action bar: Copy + Feedback */}
         {!isUser && !message.isStreaming && message.content && (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 animate-in fade-in duration-500 delay-300 fill-mode-both">
             <button
               onClick={handleCopy}
               className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-[#2C2A29]/50 hover:text-[#2C2A29] hover:bg-[#2C2A29]/5 transition-all duration-200"
               title={copied ? "Copied!" : "Copy answer"}
             >
               {copied ? (
-                <>
+                <div className="flex items-center gap-1.5 animate-in zoom-in-50 duration-300">
                   <Check className="h-3.5 w-3.5 text-green-600" />
                   <span className="text-green-600">Copied</span>
-                </>
+                </div>
               ) : (
-                <>
+                <div className="flex items-center gap-1.5">
                   <Copy className="h-3.5 w-3.5" />
                   <span>Copy</span>
-                </>
+                </div>
               )}
             </button>
             <FeedbackButtons

@@ -82,17 +82,18 @@ export default function ChatSidebar({
               Belum ada percakapan
             </p>
           ) : (
-            conversations.map((conv) => {
+            conversations.map((conv, idx) => {
               const isActive = pathname === `/chat/${conv.id}`;
               return (
                 <div
                   key={conv.id}
                   className={cn(
-                    "group flex items-center gap-2 rounded-xl px-4 py-3 text-sm transition-all duration-300 font-medium",
+                    "group flex items-center gap-2 rounded-xl px-4 py-3 text-sm transition-all duration-300 font-medium animate-in slide-in-from-left-4 fade-in fill-mode-both",
                     isActive
                       ? "bg-[#2C2A29]/5 text-[#2C2A29] shadow-sm border border-[#2C2A29]/10"
                       : "text-[#2C2A29]/60 hover:bg-[#2C2A29]/5 hover:text-[#2C2A29]"
                   )}
+                  style={{ animationDelay: `${idx * 50}ms`, animationDuration: "500ms" }}
                 >
                   <MessageSquare className={cn("h-4 w-4 shrink-0 transition-colors", isActive ? "text-[#2C2A29]" : "text-[#2C2A29]/40 group-hover:text-[#2C2A29]")} />
                   {editingId === conv.id ? (
