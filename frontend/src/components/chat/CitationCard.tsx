@@ -1,6 +1,8 @@
 "use client";
 
-import { FileText, Youtube, Calendar, User } from "lucide-react";
+import { useState } from "react";
+import { FileText, Youtube, Calendar, User, ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { SourceCitation } from "@/types";
 
 interface CitationCardProps {
@@ -9,6 +11,7 @@ interface CitationCardProps {
 }
 
 export default function CitationCard({ citation, index }: CitationCardProps) {
+  const [expanded, setExpanded] = useState(false);
   const isYoutube = citation.source_type === "youtube";
   const Icon = isYoutube ? Youtube : FileText;
   const typeLabel = isYoutube
@@ -18,7 +21,10 @@ export default function CitationCard({ citation, index }: CitationCardProps) {
       : "Afternoon Service";
 
   return (
-    <div className="group rounded-lg border border-[#2C2A29]/10 bg-[#E5DCD5]/50 p-3 transition-colors hover:border-[#2C2A29]/30 shadow-sm backdrop-blur-sm">
+    <div
+      onClick={() => setExpanded(!expanded)}
+      className="group rounded-lg border border-[#2C2A29]/10 bg-[#E5DCD5]/50 p-3 transition-all duration-300 hover:border-[#2C2A29]/30 shadow-sm backdrop-blur-sm cursor-pointer"
+    >
       <div className="flex items-start gap-2">
         {/* Index badge */}
         <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-[#2C2A29]/10 text-[10px] font-bold text-[#2C2A29]">
@@ -27,7 +33,10 @@ export default function CitationCard({ citation, index }: CitationCardProps) {
 
         <div className="min-w-0 flex-1 space-y-1.5 pt-0.5">
           {/* Title */}
-          <p className="text-[13px] font-semibold text-[#2C2A29] leading-snug truncate">
+          <p className={cn(
+            "text-[13px] font-semibold text-[#2C2A29] leading-snug",
+            !expanded && "truncate"
+          )}>
             {citation.title}
           </p>
 
@@ -58,10 +67,21 @@ export default function CitationCard({ citation, index }: CitationCardProps) {
           </div>
 
           {/* Excerpt */}
-          <p className="text-[12px] font-medium text-[#2C2A29]/70 line-clamp-2 leading-relaxed mt-2 italic">
-            "{citation.excerpt}"
+          <p className={cn(
+            "text-[12px] font-medium text-[#2C2A29]/70 leading-relaxed mt-2 italic transition-all duration-300",
+            expanded ? "" : "line-clamp-2"
+          )}>
+            &ldquo;{citation.excerpt}&rdquo;
           </p>
         </div>
+
+        {/* Expand indicator */}
+        <ChevronDown
+          className={cn(
+            "h-4 w-4 shrink-0 text-[#2C2A29]/30 transition-transform duration-300 mt-0.5",
+            expanded && "rotate-180"
+          )}
+        />
       </div>
     </div>
   );
