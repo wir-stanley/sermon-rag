@@ -1,9 +1,6 @@
 "use client";
 
-import Image from "next/image";
-
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -15,7 +12,6 @@ export default function ChatLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
   const { conversations, remove, rename } = useConversations();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -33,10 +29,10 @@ export default function ChatLayout({
   );
 
   return (
-    <div className="relative flex h-dvh overflow-hidden bg-[#E5DCD5] text-[#2C2A29] selection:bg-[#2C2A29] selection:text-[#E5DCD5]">
+    <div className="relative flex h-dvh overflow-hidden bg-background text-foreground">
       <div className="relative z-10 flex h-full w-full">
         {/* Desktop sidebar */}
-        <div className="hidden md:block bg-transparent border-r border-[#2C2A29]/10">{sidebar}</div>
+        <div className="hidden md:block bg-[hsl(var(--sidebar-bg))] border-r border-[hsl(var(--sidebar-border))]">{sidebar}</div>
 
         {/* Mobile sidebar */}
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -44,12 +40,12 @@ export default function ChatLayout({
             <Button
               variant="ghost"
               size="icon"
-              className="absolute left-3 top-3 z-20 md:hidden text-[#2C2A29]/70 hover:text-[#2C2A29]"
+              className="absolute left-3 top-3 z-20 md:hidden text-foreground/70 hover:text-foreground"
             >
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-64 p-0 bg-[#E5DCD5] border-[#2C2A29]/10 text-[#2C2A29]">
+          <SheetContent side="left" className="w-64 p-0 bg-background border-border text-foreground">
             {sidebar}
           </SheetContent>
         </Sheet>

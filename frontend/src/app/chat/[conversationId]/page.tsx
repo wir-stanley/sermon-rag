@@ -4,6 +4,7 @@ import { useEffect, useState, use } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { getConversation } from "@/lib/api";
 import { useChat } from "@/hooks/useChat";
+import { motion } from "framer-motion";
 import MessageList from "@/components/chat/MessageList";
 import ChatInput from "@/components/chat/ChatInput";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -28,7 +29,6 @@ export default function ConversationPage({
     setConversationId,
   } = useChat(convId);
 
-  // Load existing conversation messages
   useEffect(() => {
     let cancelled = false;
 
@@ -85,13 +85,18 @@ export default function ConversationPage({
   }
 
   return (
-    <>
+    <motion.div
+      className="flex flex-1 flex-col overflow-hidden"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
       <MessageList messages={messages} />
       <ChatInput
         onSend={sendMessage}
         onStop={stopStreaming}
         isStreaming={isStreaming}
       />
-    </>
+    </motion.div>
   );
 }

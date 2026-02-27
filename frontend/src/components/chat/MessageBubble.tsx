@@ -1,10 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { User, BookOpen, Copy, Check } from "lucide-react";
+import { User, Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 import CitationList from "./CitationList";
 import FeedbackButtons from "./FeedbackButtons";
+import LottieAnimation from "@/components/ui/lottie-animation";
+import { crossGlow, thinkingDove } from "@/lib/animations";
 import type { Message } from "@/types";
 
 interface MessageBubbleProps {
@@ -21,7 +24,6 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Fallback for older browsers
       const textarea = document.createElement("textarea");
       textarea.value = message.content;
       document.body.appendChild(textarea);
@@ -34,18 +36,21 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
   };
 
   return (
-    <div
+    <motion.div
       className={cn(
-        "flex gap-2 sm:gap-3 px-3 sm:px-4 py-4 animate-in fade-in slide-in-from-bottom-4 duration-500",
+        "flex gap-2 sm:gap-3 px-3 sm:px-4 py-4",
         isUser ? "justify-end" : "justify-start"
       )}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
     >
       {!isUser && (
-        <div className="relative mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/60 border border-[#2C2A29]/10 text-[#2C2A29] backdrop-blur-md shadow-sm">
-          {message.isStreaming && !message.content && (
-            <div className="absolute inset-0 rounded-full bg-[#2C2A29]/5 animate-ping opacity-75"></div>
-          )}
-          <BookOpen className="h-4 w-4 relative z-10" />
+        <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-card/80 border border-border text-foreground backdrop-blur-md shadow-sm overflow-hidden">
+          <LottieAnimation
+            animationData={crossGlow}
+            className="h-10 w-10"
+          />
         </div>
       )}
 
@@ -60,8 +65,8 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
           className={cn(
             "rounded-3xl px-5 sm:px-7 py-5 shadow-sm backdrop-blur-md transition-all duration-300 overflow-hidden break-words",
             isUser
-              ? "bg-[#2C2A29] text-[#E5DCD5] font-medium tracking-wide"
-              : "bg-white/40 text-[#2C2A29] border border-[#2C2A29]/10"
+              ? "bg-[hsl(var(--message-user-bg))] text-[hsl(var(--message-user-text))] font-medium tracking-wide"
+              : "bg-[hsl(var(--message-assistant-bg))] text-foreground border border-border/50"
           )}
         >
           {isUser ? (
@@ -70,7 +75,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
             <div
               className={cn(
                 "prose-chat text-[15px] leading-relaxed tracking-wide font-sans text-inherit",
-                message.isStreaming && !message.content && "text-[#2C2A29]/40"
+                message.isStreaming && !message.content && "text-foreground/40"
               )}
             >
               {message.content ? (
@@ -81,11 +86,12 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
                   }}
                 />
               ) : (
-                <div className="flex items-center gap-1.5 h-6 px-1">
-                  <span className="h-2 w-2 rounded-full bg-[#2C2A29]/60 animate-[glow-pulse_1.5s_ease-in-out_infinite]" style={{ animationDelay: "0ms" }} />
-                  <span className="h-2 w-2 rounded-full bg-[#2C2A29]/60 animate-[glow-pulse_1.5s_ease-in-out_infinite]" style={{ animationDelay: "200ms" }} />
-                  <span className="h-2 w-2 rounded-full bg-[#2C2A29]/60 animate-[glow-pulse_1.5s_ease-in-out_infinite]" style={{ animationDelay: "400ms" }} />
-                </div>
+                <span className="flex items-center gap-2 h-8 px-1">
+                  <LottieAnimation
+                    animationData={thinkingDove}
+                    className="h-8 w-12"
+                  />
+                </span>
               )}
             </div>
           )}
@@ -98,24 +104,25 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
 
         {/* Action bar: Copy + Feedback */}
         {!isUser && !message.isStreaming && message.content && (
-          <div className="flex items-center gap-1 animate-in fade-in duration-500 delay-300 fill-mode-both">
-            <button
+          <div className="flex items-center gap-1">
+            <motion.button
               onClick={handleCopy}
-              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-[#2C2A29]/50 hover:text-[#2C2A29] hover:bg-[#2C2A29]/5 transition-all duration-200"
+              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-all duration-200"
               title={copied ? "Copied!" : "Copy answer"}
+              whileTap={{ scale: 0.9 }}
             >
               {copied ? (
-                <div className="flex items-center gap-1.5 animate-in zoom-in-50 duration-300">
+                <>
                   <Check className="h-3.5 w-3.5 text-green-600" />
                   <span className="text-green-600">Copied</span>
-                </div>
+                </>
               ) : (
-                <div className="flex items-center gap-1.5">
+                <>
                   <Copy className="h-3.5 w-3.5" />
                   <span>Copy</span>
-                </div>
+                </>
               )}
-            </button>
+            </motion.button>
             <FeedbackButtons
               messageId={message.serverMessageId}
               initialFeedback={message.feedback}
@@ -125,43 +132,30 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
       </div>
 
       {isUser && (
-        <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#2C2A29] text-[#E5DCD5] shadow-sm">
+        <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-foreground text-background shadow-sm dark:bg-primary dark:text-primary-foreground">
           <User className="h-4 w-4" />
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
 
 /** Simple markdown to HTML for assistant messages */
 function formatMarkdown(text: string): string {
   return text
-    // Code blocks
     .replace(/```(\w*)\n([\s\S]*?)```/g, "<pre><code>$2</code></pre>")
-    // Inline code
     .replace(/`([^`]+)`/g, "<code>$1</code>")
-    // Bold
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    // Italic
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
-    // Headers
     .replace(/^### (.+)$/gm, "<h3>$1</h3>")
     .replace(/^## (.+)$/gm, "<h2>$1</h2>")
     .replace(/^# (.+)$/gm, "<h1>$1</h1>")
-    // Blockquotes
     .replace(/^> (.+)$/gm, "<blockquote>$1</blockquote>")
-    // Unordered lists
     .replace(/^[*-] (.+)$/gm, "<li>$1</li>")
-    // Ordered lists
     .replace(/^\d+\. (.+)$/gm, "<li>$1</li>")
-    // Wrap consecutive <li> in <ul>
     .replace(/((?:<li>.*<\/li>\n?)+)/g, "<ul>$1</ul>")
-    // Links
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
-    // Paragraphs (double newlines)
     .replace(/\n\n/g, "</p><p>")
-    // Single newlines to <br>
     .replace(/\n/g, "<br>")
-    // Wrap in <p>
     .replace(/^(.+)$/, "<p>$1</p>");
 }

@@ -8,12 +8,14 @@ import {
   MessageSquare,
   Trash2,
   Pencil,
-  BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import LottieAnimation from "@/components/ui/lottie-animation";
+import ThemeToggle from "@/components/ui/theme-toggle";
+import { crossGlow, sidebarEmpty } from "@/lib/animations";
 import type { ConversationSummary } from "@/types";
 import { useState } from "react";
 import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
@@ -48,54 +50,69 @@ export default function ChatSidebar({
   }
 
   return (
-    <div className="flex h-full w-full flex-col bg-transparent">
+    <div className="flex h-full w-full flex-col bg-[hsl(var(--sidebar-bg))]">
       {/* Brand */}
-      <div className="flex items-center justify-center px-6 py-10">
+      <div className="flex items-center justify-center px-6 py-10 relative">
+        {/* Cross glow behind logo */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-30">
+          <LottieAnimation
+            animationData={crossGlow}
+            className="h-20 w-20"
+          />
+        </div>
         <Link href="/">
           <Image
             src="/images/logo.png"
             alt="GRII Logo"
             width={300}
             height={100}
-            className="h-16 w-auto object-contain brightness-0 opacity-85 hover:opacity-100 transition-opacity cursor-pointer"
+            className="h-16 w-auto object-contain brightness-0 dark:brightness-0 dark:invert opacity-85 hover:opacity-100 transition-opacity cursor-pointer relative z-10"
             priority
           />
         </Link>
       </div>
 
       <div className="px-6 mb-4">
-        <Button
-          onClick={onNewChat}
-          variant="outline"
-          className="w-full justify-start gap-2 bg-transparent border border-[#2C2A29]/20 text-[#2C2A29] font-semibold tracking-wide hover:text-[#E5DCD5] hover:bg-[#2C2A29] hover:border-[#2C2A29] transition-all duration-300 shadow-sm rounded-full"
-        >
-          <Plus className="h-4 w-4" />
-          Percakapan Baru
-        </Button>
+        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+          <Button
+            onClick={onNewChat}
+            variant="outline"
+            className="w-full justify-start gap-2 bg-transparent border border-border text-foreground font-semibold tracking-wide hover:text-primary-foreground hover:bg-foreground hover:border-foreground dark:hover:bg-primary dark:hover:border-primary dark:hover:text-primary-foreground transition-all duration-300 shadow-sm rounded-full"
+          >
+            <Plus className="h-4 w-4" />
+            Percakapan Baru
+          </Button>
+        </motion.div>
       </div>
 
       {/* Conversation list */}
       <ScrollArea className="flex-1 px-4 mt-2">
         <div className="space-y-1 pb-4">
           {conversations.length === 0 ? (
-            <p className="px-2 py-6 text-center text-[10px] text-[#2C2A29]/40 font-semibold tracking-widest uppercase mt-4">
-              Belum ada percakapan
-            </p>
+            <div className="flex flex-col items-center py-8">
+              <LottieAnimation
+                animationData={sidebarEmpty}
+                className="h-16 w-16 opacity-60"
+              />
+              <p className="mt-3 text-center text-[10px] text-muted-foreground font-semibold tracking-widest uppercase">
+                Belum ada percakapan
+              </p>
+            </div>
           ) : (
-            conversations.map((conv, idx) => {
+            conversations.map((conv) => {
               const isActive = pathname === `/chat/${conv.id}`;
               return (
-                <div
+                <motion.div
                   key={conv.id}
                   className={cn(
-                    "group flex items-center gap-2 rounded-xl px-4 py-3 text-sm transition-all duration-300 font-medium animate-in slide-in-from-left-4 fade-in fill-mode-both",
+                    "group flex items-center gap-2 rounded-xl px-4 py-3 text-sm transition-all duration-300 font-medium",
                     isActive
-                      ? "bg-[#2C2A29]/5 text-[#2C2A29] shadow-sm border border-[#2C2A29]/10"
-                      : "text-[#2C2A29]/60 hover:bg-[#2C2A29]/5 hover:text-[#2C2A29]"
+                      ? "bg-gold-500/10 text-foreground shadow-sm border border-gold-500/20"
+                      : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground border border-transparent"
                   )}
-                  style={{ animationDelay: `${idx * 50}ms`, animationDuration: "500ms" }}
+                  whileHover={{ x: 2 }}
                 >
-                  <MessageSquare className={cn("h-4 w-4 shrink-0 transition-colors", isActive ? "text-[#2C2A29]" : "text-[#2C2A29]/40 group-hover:text-[#2C2A29]")} />
+                  <MessageSquare className={cn("h-4 w-4 shrink-0 transition-colors", isActive ? "text-gold-600" : "text-muted-foreground group-hover:text-foreground")} />
                   {editingId === conv.id ? (
                     <input
                       value={editTitle}
@@ -105,7 +122,7 @@ export default function ChatSidebar({
                         if (e.key === "Enter") submitEdit(conv.id);
                         if (e.key === "Escape") setEditingId(null);
                       }}
-                      className="flex-1 bg-transparent border-b border-[#2C2A29]/30 outline-none text-[#2C2A29] px-1"
+                      className="flex-1 bg-transparent border-b border-foreground/30 outline-none text-foreground px-1"
                       autoFocus
                     />
                   ) : (
@@ -122,7 +139,7 @@ export default function ChatSidebar({
                         e.preventDefault();
                         startEdit(conv);
                       }}
-                      className="p-1.5 text-[#2C2A29]/40 hover:text-[#2C2A29] transition-colors"
+                      className="p-1.5 text-muted-foreground hover:text-foreground transition-colors"
                     >
                       <Pencil className="h-3 w-3" />
                     </button>
@@ -131,12 +148,12 @@ export default function ChatSidebar({
                         e.preventDefault();
                         onDelete(conv.id);
                       }}
-                      className="p-1.5 text-[#2C2A29]/40 hover:text-red-500/80 transition-colors"
+                      className="p-1.5 text-muted-foreground hover:text-red-500 transition-colors"
                     >
                       <Trash2 className="h-3 w-3" />
                     </button>
                   </div>
-                </div>
+                </motion.div>
               );
             })
           )}
@@ -144,17 +161,20 @@ export default function ChatSidebar({
       </ScrollArea>
 
       {/* Footer */}
-      <div className="border-t border-[#2C2A29]/10 px-6 py-6 flex items-center justify-between">
-        <Link
-          href="/"
-          className="text-[10px] uppercase tracking-widest text-[#2C2A29]/40 hover:text-[#2C2A29] transition-colors font-semibold"
-        >
-          Beranda
-        </Link>
+      <div className="border-t border-[hsl(var(--sidebar-border))] px-6 py-6 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <Link
+            href="/"
+            className="text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors font-semibold"
+          >
+            Beranda
+          </Link>
+        </div>
         <div className="flex items-center">
           <SignedOut>
             <SignInButton mode="modal">
-              <button className="text-[10px] uppercase tracking-widest text-[#2C2A29]/40 hover:text-[#2C2A29] transition-colors font-semibold">
+              <button className="text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors font-semibold">
                 Masuk
               </button>
             </SignInButton>

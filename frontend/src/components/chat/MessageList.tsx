@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { AnimatePresence } from "framer-motion";
 import MessageBubble from "./MessageBubble";
 import type { Message } from "@/types";
 
@@ -19,9 +20,11 @@ export default function MessageList({ messages }: MessageListProps) {
   return (
     <ScrollArea className="flex-1">
       <div className="mx-auto max-w-4xl py-4">
-        {messages.map((msg) => (
-          <MessageBubble key={msg.id} message={msg} />
-        ))}
+        <AnimatePresence mode="popLayout">
+          {messages.map((msg) => (
+            <MessageBubble key={msg.id} message={msg} />
+          ))}
+        </AnimatePresence>
         <div ref={bottomRef} />
       </div>
     </ScrollArea>

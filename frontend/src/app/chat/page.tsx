@@ -3,6 +3,7 @@
 import { useEffect, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useChat } from "@/hooks/useChat";
+import { motion } from "framer-motion";
 import MessageList from "@/components/chat/MessageList";
 import ChatInput from "@/components/chat/ChatInput";
 import EmptyChat from "@/components/chat/EmptyChat";
@@ -14,7 +15,6 @@ function ChatContent() {
   const { messages, isStreaming, sendMessage, stopStreaming, conversationId } = useChat();
   const sentInitial = useRef(false);
 
-  // Auto-send query from landing page search bar
   useEffect(() => {
     if (initialQuery && !sentInitial.current) {
       sentInitial.current = true;
@@ -22,7 +22,6 @@ function ChatContent() {
     }
   }, [initialQuery, sendMessage]);
 
-  // Redirect to /chat/[id] once conversation is created (clears ?q= param)
   useEffect(() => {
     if (conversationId && initialQuery) {
       router.replace(`/chat/${conversationId}`);
@@ -30,7 +29,12 @@ function ChatContent() {
   }, [conversationId, initialQuery, router]);
 
   return (
-    <>
+    <motion.div
+      className="flex flex-1 flex-col overflow-hidden"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
       {messages.length === 0 && !initialQuery ? (
         <EmptyChat onSuggestionClick={sendMessage} />
       ) : (
@@ -41,7 +45,7 @@ function ChatContent() {
         onStop={stopStreaming}
         isStreaming={isStreaming}
       />
-    </>
+    </motion.div>
   );
 }
 
