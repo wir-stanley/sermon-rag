@@ -18,8 +18,8 @@ export default function MessageList({ messages }: MessageListProps) {
   }, [messages]);
 
   return (
-    <ScrollArea className="flex-1">
-      <div className="mx-auto max-w-4xl py-4">
+    <ScrollArea className="flex-1 min-w-0 w-full">
+      <div className="mx-auto w-full max-w-4xl py-4 sm:px-4">
         <AnimatePresence mode="popLayout">
           {messages.map((msg) => (
             <MessageBubble key={msg.id} message={msg} />

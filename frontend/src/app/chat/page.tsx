@@ -30,7 +30,7 @@ function ChatContent() {
 
   return (
     <motion.div
-      className="flex flex-1 flex-col overflow-hidden"
+      className="flex flex-1 flex-col min-w-0 w-full overflow-hidden"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}

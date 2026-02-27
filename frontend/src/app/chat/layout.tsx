@@ -32,7 +32,7 @@ export default function ChatLayout({
     <div className="relative flex h-dvh overflow-hidden bg-background text-foreground">
       <div className="relative z-10 flex h-full w-full">
         {/* Desktop sidebar */}
-        <div className="hidden md:block bg-[hsl(var(--sidebar-bg))] border-r border-[hsl(var(--sidebar-border))]">{sidebar}</div>
+        <div className="hidden md:block w-72 shrink-0 bg-[hsl(var(--sidebar-bg))] border-r border-[hsl(var(--sidebar-border))]">{sidebar}</div>
 
         {/* Mobile sidebar */}
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -51,7 +51,7 @@ export default function ChatLayout({
         </Sheet>
 
         {/* Main content */}
-        <main className="flex flex-1 flex-col overflow-hidden bg-transparent">
+        <main className="flex flex-1 flex-col min-w-0 w-full overflow-hidden bg-transparent">
           {children}
         </main>
       </div>

@@ -69,8 +69,8 @@ export default function ChatInput({
 
   return (
     <div className="w-full p-6 pb-8 bg-transparent">
-      <div className="mx-auto flex max-w-3xl items-end gap-2 relative">
-        <div className="relative flex w-full items-center bg-transparent border border-border rounded-full focus-within:border-gold-500/60 focus-within:bg-card/50 focus-within:shadow-[0_0_20px_hsl(43_74%_49%/0.08)] transition-all duration-500 py-2 px-6 shadow-sm hover:border-foreground/30 hover:shadow-md">
+      <div className="mx-auto flex w-full max-w-3xl items-end gap-2 relative min-w-0">
+        <div className="relative flex w-full items-center bg-transparent border border-border rounded-full focus-within:border-gold-500/60 focus-within:bg-card/50 focus-within:shadow-[0_0_20px_hsl(43_74%_49%/0.08)] transition-all duration-500 py-2 pl-4 pr-12 shadow-sm hover:border-foreground/30 hover:shadow-md">
           <div className="relative w-full">
             <Textarea
               ref={textareaRef}
@@ -91,7 +91,7 @@ export default function ChatInput({
                 <AnimatePresence mode="wait">
                   <motion.span
                     key={placeholderIndex}
-                    className="text-[15px] font-medium tracking-wide text-muted-foreground"
+                    className="text-[13px] sm:text-[15px] max-w-full truncate font-medium tracking-wide text-muted-foreground"
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
@@ -108,13 +108,13 @@ export default function ChatInput({
               onClick={onStop}
               size="icon"
               variant="ghost"
-              className="shrink-0 text-muted-foreground hover:text-red-500 hover:bg-transparent h-[40px] w-[40px] rounded-full absolute right-3 bottom-2.5"
+              className="shrink-0 text-muted-foreground hover:text-red-500 hover:bg-transparent h-[40px] w-[40px] rounded-full absolute right-1 sm:right-3 bottom-2.5"
             >
               <Square className="h-5 w-5" />
             </Button>
           ) : (
             <motion.div
-              className="absolute right-3 bottom-2.5"
+              className="absolute right-1 sm:right-3 bottom-2.5"
               whileHover={{ scale: 1.08 }}
               whileTap={{ scale: 0.92 }}
             >
@@ -130,7 +130,7 @@ export default function ChatInput({
           )}
         </div>
       </div>
-      <p className="mx-auto mt-4 max-w-3xl text-center text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 font-semibold">
+      <p className="mx-auto mt-4 w-full max-w-3xl px-4 text-center text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 font-semibold break-words">
         Respons AI dihasilkan dari indeks khotbah GRII dan mungkin tidak sepenuhnya akurat.
       </p>
     </div>
