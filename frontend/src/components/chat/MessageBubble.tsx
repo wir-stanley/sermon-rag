@@ -38,7 +38,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
   return (
     <motion.div
       className={cn(
-        "flex gap-2 sm:gap-3 px-3 sm:px-4 py-4",
+        "flex w-full min-w-0 gap-2 sm:gap-3 px-3 sm:px-4 py-4",
         isUser ? "justify-end" : "justify-start"
       )}
       initial={{ opacity: 0, y: 12 }}

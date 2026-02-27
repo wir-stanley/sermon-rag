@@ -16,7 +16,7 @@ export default function CitationList({ citations }: CitationListProps) {
       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
         Sources
       </p>
-      <div className="grid gap-2 sm:grid-cols-2 items-start">
+      <div className="grid gap-2 sm:grid-cols-2 items-start w-full min-w-0">
         {citations.map((citation, i) => (
           <motion.div
             key={citation.source_id}

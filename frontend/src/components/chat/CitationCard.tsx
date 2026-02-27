@@ -36,7 +36,7 @@ export default function CitationCard({ citation, index }: CitationCardProps) {
     <motion.div
       onClick={() => setExpanded(!expanded)}
       className={cn(
-        "group rounded-lg border bg-card/50 p-3 shadow-sm backdrop-blur-sm cursor-pointer transition-all duration-300 ease-in-out",
+        "group w-full min-w-0 rounded-lg border bg-card/50 p-3 shadow-sm backdrop-blur-sm cursor-pointer transition-all duration-300 ease-in-out",
         expanded
           ? "border-gold-500/30 bg-card/70 shadow-[0_0_12px_hsl(43_74%_49%/0.08)]"
           : "border-border hover:border-foreground/20"
