@@ -3,6 +3,7 @@ chunking, embedding, and database storage."""
 
 import logging
 import os
+import re
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,6 +16,30 @@ from app.config import get_settings
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
+
+
+def _extract_speaker_from_yt_title(title: str) -> str:
+    """Extract speaker name from YouTube video title.
+
+    Common GRII title formats:
+      - "SERMON TITLE - Pdt. Ivan Kristiono | KU Sore"
+      - "SERMON TITLE - Pdt. Dr. Stephen Tong | KU Minggu"
+      - "SERMON TITLE - Ev. Naga Surya | KU Sore"
+      - "SERMON TITLE - Pdt. Heru Lin | KU Sore"
+
+    Returns empty string if no speaker found.
+    """
+    # Pattern: look for "- Pdt." or "- Ev." followed by the name, optionally ending at "|"
+    match = re.search(
+        r'[-–]\s*((?:Pdt\.\s*(?:Dr\.\s*)?|Ev\.\s*)[A-Z][a-zA-Z\s.]+)',
+        title
+    )
+    if match:
+        speaker = match.group(1).strip()
+        # Clean trailing pipes or whitespace
+        speaker = re.sub(r'\s*\|.*$', '', speaker).strip()
+        return speaker
+    return ""
 
 
 async def ingest_pdf_directory(
@@ -144,10 +169,14 @@ async def ingest_youtube_urls(
             # Extract transcript
             result = get_transcript(url, preferred_language=language)
 
+            # Extract speaker from title (e.g. "SERMON TITLE - Pdt. Ivan Kristiono | KU Sore")
+            speaker = _extract_speaker_from_yt_title(result.title)
+
             # Create source record
             source = SermonSource(
                 source_type=SourceType.YOUTUBE,
                 title=result.title,
+                speaker=speaker,
                 source_url=result.source_url,
                 language=result.language,
                 metadata_={
@@ -164,6 +193,7 @@ async def ingest_youtube_urls(
                 metadata={
                     "source_id": source.id,
                     "title": result.title,
+                    "speaker": speaker,
                     "video_id": result.video_id,
                 },
             )
