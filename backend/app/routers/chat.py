@@ -2,17 +2,20 @@
 
 import json
 import logging
+import re
 from datetime import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
+from starlette.requests import Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import get_optional_user
 from app.database import get_db
 from app.models import User, Conversation, ChatMessage, MessageRole
+from app.rate_limit import limiter, CHAT_LIMIT_AUTH, CHAT_LIMIT_ANON
 from app.schemas import ChatRequest, ChatResponse
 from app.services.query_engine import query_sermons, query_sermons_stream
 
@@ -20,6 +23,22 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/chat", tags=["Chat"])
 
 MAX_HISTORY_MESSAGES = 6  # last 3 turns (user + assistant each)
+
+
+def _sanitize_question(question: str) -> str:
+    """Sanitize user input: strip whitespace, collapse spaces, basic guardrails."""
+    q = question.strip()
+    q = re.sub(r'\s+', ' ', q)  # collapse multiple spaces/newlines
+    if len(q) < 2:
+        raise HTTPException(status_code=400, detail="Question is too short.")
+    return q
+
+
+def _dynamic_chat_limit(key: str) -> str:
+    """Return different rate limits for authenticated vs anonymous users."""
+    if key.startswith("user:"):
+        return CHAT_LIMIT_AUTH
+    return CHAT_LIMIT_ANON
 
 
 async def _fetch_chat_history(
@@ -66,12 +85,16 @@ async def _get_or_create_conversation(
 
 
 @router.post("", response_model=ChatResponse)
+@limiter.limit(dynamic_limits=_dynamic_chat_limit)
 async def chat(
+    request_obj: Request,
     request: ChatRequest,
     db: AsyncSession = Depends(get_db),
     user: Optional[User] = Depends(get_optional_user),
 ):
     """Ask a question about sermon content. Returns a grounded answer with citations."""
+    request.question = _sanitize_question(request.question)
+
     # Fetch conversation history for context
     history = await _fetch_chat_history(db, request.conversation_id, user)
 
@@ -98,12 +121,16 @@ async def chat(
 
 
 @router.post("/stream")
+@limiter.limit(dynamic_limits=_dynamic_chat_limit)
 async def chat_stream(
+    request_obj: Request,
     request: ChatRequest,
     db: AsyncSession = Depends(get_db),
     user: Optional[User] = Depends(get_optional_user),
 ):
     """Streaming version — sends answer tokens as server-sent events."""
+    request.question = _sanitize_question(request.question)
+
     # Fetch conversation history for context
     history = await _fetch_chat_history(db, request.conversation_id, user)
 
