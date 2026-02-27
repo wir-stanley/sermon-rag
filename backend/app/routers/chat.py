@@ -83,26 +83,26 @@ async def _get_or_create_conversation(
 @router.post("", response_model=ChatResponse)
 @limiter.limit(CHAT_LIMIT_AUTH)
 async def chat(
-    request_obj: Request,
-    request: ChatRequest,
+    request: Request,
+    body: ChatRequest,
     db: AsyncSession = Depends(get_db),
     user: Optional[User] = Depends(get_optional_user),
 ):
     """Ask a question about sermon content. Requires authentication."""
     if not user:
         raise HTTPException(status_code=401, detail="Sign in to use the chatbot")
-    request.question = _sanitize_question(request.question)
+    body.question = _sanitize_question(body.question)
 
     # Fetch conversation history for context
-    history = await _fetch_chat_history(db, request.conversation_id, user)
+    history = await _fetch_chat_history(db, body.conversation_id, user)
 
-    result = await query_sermons(db, request.question, request.language, chat_history=history)
+    result = await query_sermons(db, body.question, body.language, chat_history=history)
 
     # Persist conversation
-    conv = await _get_or_create_conversation(db, user, request.conversation_id, request.question)
+    conv = await _get_or_create_conversation(db, user, body.conversation_id, body.question)
     db.add(ChatMessage(
         conversation_id=conv.id, role=MessageRole.USER,
-        content=request.question, language=request.language,
+        content=body.question, language=body.language,
     ))
     db.add(ChatMessage(
         conversation_id=conv.id, role=MessageRole.ASSISTANT,
@@ -120,24 +120,24 @@ async def chat(
 @router.post("/stream")
 @limiter.limit(CHAT_LIMIT_AUTH)
 async def chat_stream(
-    request_obj: Request,
-    request: ChatRequest,
+    request: Request,
+    body: ChatRequest,
     db: AsyncSession = Depends(get_db),
     user: Optional[User] = Depends(get_optional_user),
 ):
     """Streaming version — sends answer tokens as server-sent events. Requires authentication."""
     if not user:
         raise HTTPException(status_code=401, detail="Sign in to use the chatbot")
-    request.question = _sanitize_question(request.question)
+    body.question = _sanitize_question(body.question)
 
     # Fetch conversation history for context
-    history = await _fetch_chat_history(db, request.conversation_id, user)
+    history = await _fetch_chat_history(db, body.conversation_id, user)
 
     # Persist user message
-    conv = await _get_or_create_conversation(db, user, request.conversation_id, request.question)
+    conv = await _get_or_create_conversation(db, user, body.conversation_id, body.question)
     db.add(ChatMessage(
         conversation_id=conv.id, role=MessageRole.USER,
-        content=request.question, language=request.language,
+        content=body.question, language=body.language,
     ))
     await db.commit()
 
@@ -150,7 +150,7 @@ async def chat_stream(
             gen_time = None
             chunk_count = None
 
-            async for event in query_sermons_stream(db, request.question, request.language, chat_history=history):
+            async for event in query_sermons_stream(db, body.question, body.language, chat_history=history):
                 yield f"data: {json.dumps(event)}\n\n"
 
                 if event["type"] == "token":
@@ -168,7 +168,7 @@ async def chat_stream(
                 citations=citations_data if citations_data else None,
                 generation_time_ms=gen_time,
                 context_chunk_count=chunk_count,
-                language=request.language,
+                language=body.language,
             )
             db.add(asst_msg)
             await db.commit()
