@@ -70,7 +70,7 @@ export default function ConversationPage({
 
   if (loading) {
     return (
-      <div className="flex flex-1 flex-col gap-4 p-6">
+      <div className="flex flex-1 flex-col min-w-0 w-full gap-4 p-6">
         {Array.from({ length: 3 }).map((_, i) => (
           <div key={i} className="flex gap-3">
             <Skeleton className="h-8 w-8 rounded-lg" />
@@ -86,7 +86,7 @@ export default function ConversationPage({
 
   return (
     <motion.div
-      className="flex flex-1 flex-col overflow-hidden"
+      className="flex flex-1 flex-col min-w-0 w-full overflow-hidden"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
