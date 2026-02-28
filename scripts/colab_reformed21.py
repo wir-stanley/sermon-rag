@@ -1,26 +1,45 @@
 # ==========================================
 # Google Colab: Extract Reformed21TV Sermons
-# (Resumes, tracks skip reasons)
+# (Resumes, tracks skip reasons, uses cookies)
 # ==========================================
 # Usage in Colab:
-#   1. Upload this file + reformed21_transcripts.json (if exists) to Colab
-#   2. Run: !pip install yt-dlp youtube-transcript-api
-#   3. Run: !python colab_reformed21.py
-#   4. Download reformed21_transcripts.json when done
+#   1. Export YouTube cookies as `cookies.txt` (Netscape format) using a browser extension.
+#   2. Upload this file + reformed21_transcripts.json + cookies.txt to Colab.
+#   3. Run: !pip install yt-dlp youtube-transcript-api
+#   4. Run: !python colab_reformed21.py
+#   5. Download reformed21_transcripts.json when done
 # ==========================================
 
 import json
 import os
+import http.cookiejar
+import requests as req_lib
 import yt_dlp
 from youtube_transcript_api import YouTubeTranscriptApi
 
 CHANNEL_URL = "https://www.youtube.com/@Reformed21TV/videos"
 OUTPUT_FILE = "reformed21_transcripts.json"
+COOKIES_FILE = "cookies.txt"
 
 SKIP_KEYWORDS = ["sermon clips", "sermon clip", "thoughts from his servants", "cuplikan", "highlight"]
 
 def should_skip(title):
     return any(kw in title.lower() for kw in SKIP_KEYWORDS)
+
+def build_cookie_session():
+    """Load a Netscape cookies.txt into a requests.Session if the file exists."""
+    if not os.path.exists(COOKIES_FILE):
+        return None
+    try:
+        jar = http.cookiejar.MozillaCookieJar(COOKIES_FILE)
+        jar.load(ignore_discard=True, ignore_expires=True)
+        session = req_lib.Session()
+        session.cookies = jar
+        print(f"🍪 Loaded YouTube cookies from {COOKIES_FILE}")
+        return session
+    except Exception as e:
+        print(f"⚠️ Failed to load cookies: {e}")
+        return None
 
 def main():
     # Step 0: Load existing results
@@ -38,7 +57,11 @@ def main():
 
     # Step 1: Get all videos
     print("Fetching channel video list...")
-    with yt_dlp.YoutubeDL({"extract_flat": "in_playlist", "quiet": True, "no_warnings": True}) as ydl:
+    ydl_opts = {"extract_flat": "in_playlist", "quiet": True, "no_warnings": True}
+    if os.path.exists(COOKIES_FILE):
+        ydl_opts["cookiefile"] = COOKIES_FILE
+        
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(CHANNEL_URL, download=False)
         all_videos = [v for v in info.get("entries", []) if not should_skip(v.get("title", ""))]
 
@@ -50,7 +73,9 @@ def main():
         return
 
     # Step 2: Fetch transcripts
-    ytt = YouTubeTranscriptApi()
+    cookie_session = build_cookie_session()
+    ytt = YouTubeTranscriptApi(http_client=cookie_session) if cookie_session else YouTubeTranscriptApi()
+    
     new_count = 0
     no_transcript_count = 0
     ip_blocked_count = 0
@@ -64,10 +89,27 @@ def main():
 
         print(f"[{i+1}/{len(remaining)}] {title}...", end=" ")
 
+        import time
+        from youtube_transcript_api._errors import NoTranscriptFound, TranscriptsDisabled, VideoUnavailable
+        
         try:
-            transcript = ytt.fetch(vid, languages=["id", "en", "id-ID"])
-            segments = [{"text": s.text, "start": s.start, "duration": s.duration} for s in transcript.snippets]
-            full_text = " ".join([s.text.strip() for s in transcript.snippets])
+            try:
+                transcript = ytt.fetch(vid, languages=["id"])
+                detected_lang = "id"
+            except NoTranscriptFound:
+                try:
+                    transcript = ytt.fetch(vid, languages=["en"])
+                    detected_lang = "en"
+                except NoTranscriptFound:
+                    transcript_list = ytt.list(vid)
+                    available = list(transcript_list)
+                    if not available:
+                        raise NoTranscriptFound(vid, [], None)
+                    transcript = ytt.fetch(vid, languages=[available[0].language_code])
+                    detected_lang = available[0].language_code
+
+            segments = [{"text": s["text"], "start": s["start"], "duration": s["duration"]} for s in transcript]
+            full_text = " ".join([s["text"].strip() for s in transcript])
 
             results.append({
                 "video_id": vid,
@@ -75,7 +117,7 @@ def main():
                 "source_url": url,
                 "full_text": full_text.replace("\n", " "),
                 "segments": segments,
-                "language": transcript.language_code or "id"
+                "language": detected_lang
             })
             new_count += 1
             consecutive_ip_errors = 0
@@ -95,6 +137,8 @@ def main():
                 no_transcript_count += 1
                 consecutive_ip_errors = 0
                 print(f"⚠️ NO TRANSCRIPT ({str(e)[:50]})")
+
+        time.sleep(3)
 
     # Step 3: Save everything
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
