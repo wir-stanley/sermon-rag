@@ -80,7 +80,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
             >
               {message.content ? (
                 <div
-                  className={message.isStreaming ? "streaming-cursor" : ""}
+                  className={cn("max-w-[calc(100vw-4rem)] break-words", message.isStreaming ? "streaming-cursor" : "")}
                   dangerouslySetInnerHTML={{
                     __html: formatMarkdown(message.content),
                   }}

@@ -29,7 +29,7 @@ export default function ChatLayout({
   );
 
   return (
-    <div className="relative flex h-dvh overflow-hidden bg-background text-foreground">
+    <div className="relative flex h-dvh w-full overflow-hidden bg-background text-foreground">
       <div className="relative z-10 flex h-full w-full">
         {/* Desktop sidebar */}
         <div className="hidden md:block w-72 shrink-0 bg-[hsl(var(--sidebar-bg))] border-r border-[hsl(var(--sidebar-border))]">{sidebar}</div>
