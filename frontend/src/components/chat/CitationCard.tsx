@@ -44,7 +44,7 @@ export default function CitationCard({ citation, index }: CitationCardProps) {
       layout
       transition={{ layout: { duration: 0.3 } }}
     >
-      <div className="flex items-start gap-2">
+      <div className="flex w-full min-w-0 items-start gap-2">
         {/* Index badge */}
         <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-foreground/10 text-[10px] font-bold text-foreground">
           {index + 1}
