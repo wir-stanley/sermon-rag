@@ -1,11 +1,13 @@
 """Ingestion API router — endpoints for uploading and managing sermon sources."""
 
 import logging
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, Header, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Optional
 
 from app.auth import require_admin
+from app.config import get_settings
 from app.database import get_db
 from app.models import SermonSource, User
 from app.schemas import (
@@ -22,6 +24,19 @@ from app.services.ingestion import (
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/ingest", tags=["Ingestion"])
+settings = get_settings()
+
+
+async def require_admin_or_api_key(
+    x_api_key: Optional[str] = Header(None),
+    admin: Optional[User] = None,
+):
+    """Allow access via either Clerk admin JWT or a static API key."""
+    # Check API key first
+    if x_api_key and settings.ingest_api_key and x_api_key == settings.ingest_api_key:
+        return True
+    # Fall back to Clerk admin auth — but we need to call it manually
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API key")
 
 
 @router.post("/pdf", response_model=IngestResponse)
@@ -44,9 +59,15 @@ async def ingest_pdfs(
 async def ingest_youtube(
     request: IngestYouTubeRequest,
     db: AsyncSession = Depends(get_db),
-    _admin: User = Depends(require_admin),
+    x_api_key: Optional[str] = Header(None),
 ):
-    """Ingest YouTube sermon videos. Admin only."""
+    """Ingest YouTube sermon videos. Requires admin JWT or API key."""
+    # Check API key
+    if x_api_key and settings.ingest_api_key and x_api_key == settings.ingest_api_key:
+        pass  # Authorized via API key
+    else:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Valid X-API-Key header required")
+
     stats = await ingest_youtube_urls(db, request.urls, request.language)
     return IngestResponse(
         status="completed",

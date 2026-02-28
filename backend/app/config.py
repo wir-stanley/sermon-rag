@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     clerk_issuer: str = ""
     clerk_jwks_url: str = ""
 
+    # --- Ingestion API Key (long-lived, for batch scripts) ---
+    ingest_api_key: str = ""
+
     # --- CORS ---
     frontend_url: str = "http://localhost:3000"
 

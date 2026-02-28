@@ -26,10 +26,8 @@ import yt_dlp
 # Your production API base URL (no trailing slash)
 API_BASE_URL = "https://sermon-rag-production.up.railway.app"
 
-# Your Clerk admin JWT token.
-# To get this: open grii.app in your browser, open DevTools > Application > Cookies,
-# find the __session cookie value, or get it from the Network tab Authorization header.
-CLERK_TOKEN = ""  # <-- PASTE YOUR TOKEN HERE
+# Static API key for ingestion (never expires, set in Railway env vars)
+INGEST_API_KEY = "ThqQrkLiWe_yYFwLJRv3q4OEGnawggI-5iU9Bgugtsc"
 
 # YouTube channel to ingest
 CHANNEL_URL = "https://www.youtube.com/@Reformed21TV/videos"
@@ -89,12 +87,12 @@ def get_full_sermon_urls() -> list[dict]:
     return sermons
 
 
-def ingest_batch(urls: list[str], token: str) -> dict:
+def ingest_batch(urls: list[str]) -> dict:
     """Send a batch of YouTube URLs to the production API for ingestion."""
     resp = requests.post(
         f"{API_BASE_URL}/api/ingest/youtube",
         json={"urls": urls, "language": LANGUAGE},
-        headers={"Authorization": f"Bearer {token}"},
+        headers={"X-API-Key": INGEST_API_KEY},
         timeout=300,  # 5 min timeout per batch (embedding takes time)
     )
     resp.raise_for_status()
@@ -102,11 +100,8 @@ def ingest_batch(urls: list[str], token: str) -> dict:
 
 
 def main():
-    if not CLERK_TOKEN:
-        print("❌ ERROR: You must set CLERK_TOKEN before running this script!")
-        print("   Open grii.app in your browser, open DevTools (F12),")
-        print("   go to Network tab, find any API request, and copy the")
-        print("   Authorization: Bearer <token> value.")
+    if not INGEST_API_KEY:
+        print("❌ ERROR: You must set INGEST_API_KEY before running this script!")
         return
 
     print("=" * 60)
@@ -141,7 +136,7 @@ def main():
 
         try:
             start = time.time()
-            result = ingest_batch(batch_urls, CLERK_TOKEN)
+            result = ingest_batch(batch_urls)
             elapsed = time.time() - start
 
             processed = result.get("sources_processed", 0)
@@ -163,7 +158,7 @@ def main():
         except requests.exceptions.HTTPError as e:
             print(f"  ❌ API Error: {e.response.status_code} — {e.response.text[:200]}")
             if e.response.status_code == 401:
-                print("     Your CLERK_TOKEN may have expired. Get a fresh one!")
+                print("     Your INGEST_API_KEY is invalid. Check the key!")
                 break
             elif e.response.status_code == 403:
                 print("     Your account is not an admin. Contact the system administrator.")
