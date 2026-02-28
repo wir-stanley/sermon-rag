@@ -11,11 +11,29 @@ sys.path.insert(0, "/app")
 from app.database import async_session, init_db
 from app.services.ingestion import ingest_youtube_urls
 
-CHANNEL_URL = "https://www.youtube.com/@GRIIPusatSore/videos"
+CHANNEL_URL = "https://www.youtube.com/@Reformed21TV/videos"
+# Titles containing these keywords will be skipped (case-insensitive)
 SKIP_KEYWORDS = [
-    "Sermon Clips", "Sermon Clip", "Koor ", "Virtual Ensemble",
-    "Virtual Choir", "Sekolah Minggu", "Jendela Anak", "Perkenalan",
+    # Short clips / highlights
+    "Sermon Clips", "Sermon Clip", "Cuplikan", "Highlight",
+    # Kids / Sunday School content
+    "Sekolah Minggu", "Suara Sukacita", "Firman-Mu Pelitaku",
+    "FirmanMu Pelitaku", "FirmanMu, Pelitaku", "Firman Mu Pelitaku",
+    "Craft Time", "Taman Katekismus", "Jendela Anak",
+    # Short topic clips
+    "Thoughts from His Servants", "Thoughts on Reformation",
+    "Scripture Moments", "GEREJA & PELAYANAN", "CHURCH & MINISTRY",
+    # Music / Choir
+    "Koor ", "Virtual Ensemble", "Virtual Choir",
+    # Travel vlogs
+    "Menjelajah Mesir", "Exploring Egypt",
+    # Other non-sermon content
+    "Perkenalan", "In Conversation With",
 ]
+
+# Minimum video duration in seconds (skip anything shorter)
+# 15 min = 900s — this catches all short clips automatically
+MIN_DURATION = 900
 BATCH_SIZE = 3  # Process 3 videos at a time to stay under rate limits
 BATCH_DELAY = 10  # Seconds to wait between batches
 
@@ -35,15 +53,27 @@ def get_full_sermon_urls() -> list[dict]:
         entries = info.get("entries", [])
 
     sermons = []
+    skipped_keyword = []
+    skipped_short = []
     for e in entries:
         title = e.get("title", "")
+        duration = e.get("duration") or 0
+
         if any(kw.lower() in title.lower() for kw in SKIP_KEYWORDS):
+            skipped_keyword.append(title)
             continue
+
+        if duration < MIN_DURATION:
+            skipped_short.append(f"[{duration//60}m{duration%60:02d}s] {title}")
+            continue
+
         sermons.append({
             "id": e["id"],
             "title": title,
             "url": f"https://www.youtube.com/watch?v={e['id']}",
         })
+    print(f"📺 Found {len(sermons)} sermon videos to ingest")
+    print(f"   Skipped {len(skipped_keyword)} by keyword, {len(skipped_short)} by duration (<{MIN_DURATION//60} min)")
     return sermons
 
 
@@ -79,9 +109,19 @@ async def main():
 
         print(f"  Processed: {stats['sources_processed']}, Chunks: {stats['chunks_created']}, "
               f"Errors: {len(stats['errors'])}, Time: {elapsed:.1f}s")
+        
+        ip_blocked = False
         if stats["errors"]:
             for err in stats["errors"]:
+                err_lower = str(err).lower()
+                if "blocked" in err_lower or "ip" in err_lower or "too many" in err_lower:
+                    ip_blocked = True
                 print(f"    ERROR: {err}")
+        
+        if ip_blocked:
+            print("\n  🛑 IP BLOCKED detected! Stopping immediately.")
+            break
+
         print(f"  Running total: {total_processed} sources, {total_chunks} chunks\n")
         sys.stdout.flush()
 
